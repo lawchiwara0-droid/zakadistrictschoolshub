@@ -1,415 +1,917 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<meta name="theme-color" content="#2F4538" />
-<title>Zaka District Schools AI Hub</title>
-<link rel="manifest" href="manifest.webmanifest" />
-<link rel="icon" href="icons/icon-192.png" />
-<link rel="apple-touch-icon" href="icons/icon-192.png" />
-<style>
-  :root{
-    --chalkboard: #2F4538;
-    --chalkboard-dark: #24362B;
-    --paper: #F2EBD9;
-    --paper-line: #E3D8BC;
-    --ink: #2E2A22;
-    --ink-soft: #5B5240;
-    --red-pen: #A63A2E;
-    --red-pen-soft: #C97B72;
-    --chalk: #F5F1E6;
-    --gold: #B8862F;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;height:100%;}
-  body{
-    background:var(--chalkboard-dark);
-    color:var(--ink);
-    font-family:-apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    -webkit-tap-highlight-color: transparent;
-    overscroll-behavior:none;
-  }
-  h1,h2,h3,.serif{
-    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
-    font-weight:600;
-    color:var(--ink);
-  }
-  #app{
-    max-width:480px;
-    margin:0 auto;
-    min-height:100vh;
-    background:var(--paper);
-    display:flex;
-    flex-direction:column;
-    position:relative;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f3d2e">
+  <title>Zaka District Schools Hub</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #0f3d2e;
+      --secondary: #d4af37;
+      --bg: #f4f6f8;
+      --card-bg: #ffffff;
+      --text: #2d3748;
+      --text-muted: #718096;
+      --danger: #e53e3e;
+      --success: #38a169;
+      --whatsapp: #25D366;
+    }
 
-  /* ---------- Header ---------- */
-  header{
-    background:var(--chalkboard);
-    color:var(--chalk);
-    padding:22px 20px 20px;
-    flex-shrink:0;
-  }
-  header .eyebrow{
-    font-size:12px;
-    letter-spacing:0.02em;
-    color:#B9C9BC;
-    margin-bottom:4px;
-  }
-  header h1{
-    color:var(--chalk);
-    font-size:22px;
-    line-height:1.25;
-    margin:0 0 8px 0;
-  }
-  header .chalk-rule{
-    width:64px;
-    height:3px;
-    background:var(--chalk);
-    border-radius:2px;
-    opacity:0.55;
-    margin-bottom:2px;
-  }
-  header .back-row{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:10px;
-  }
-  header .back-btn{
-    background:none;
-    border:1px solid rgba(245,241,230,0.4);
-    color:var(--chalk);
-    border-radius:8px;
-    padding:5px 10px;
-    font-size:13px;
-    cursor:pointer;
-  }
-  header .back-btn:active{ background: rgba(245,241,230,0.12); }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
 
-  /* ---------- Content ---------- */
-  main{
-    flex:1;
-    overflow-y:auto;
-    padding:18px 20px 90px;
-    background:
-      repeating-linear-gradient(
-        to bottom,
-        transparent 0px, transparent 27px,
-        var(--paper-line) 28px
-      );
-    background-attachment:local;
-  }
-  main::before{ content:none; }
-  .margin-rule{
-    position:absolute;
-    top:0; bottom:0; left:44px;
-    width:1px;
-    background:var(--red-pen-soft);
-    opacity:0.35;
-    pointer-events:none;
-  }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
 
-  section{ display:none; animation:fade .18s ease; }
-  section.active{ display:block; }
-  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+    header {
+      background: linear-gradient(135deg, var(--primary), #1a5c47);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 4px solid var(--secondary);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
 
-  p{ line-height:1.55; color:var(--ink-soft); margin:0 0 10px; white-space:pre-line; }
+    header h1 {
+      font-size: 1.6rem;
+      letter-spacing: 0.5px;
+    }
 
-  /* ---------- Home ---------- */
-  .hero-board{
-    background:var(--chalkboard);
-    border-radius:14px;
-    padding:22px;
-    color:var(--chalk);
-    margin-bottom:20px;
-  }
-  .hero-board .stat{
-    font-family: Georgia, serif;
-    font-size:44px;
-    line-height:1;
-    margin-bottom:6px;
-    transform:rotate(-1deg);
-  }
-  .hero-board .stat-label{
-    font-size:13px;
-    color:#C9D6CC;
-    margin-bottom:14px;
-  }
-  .hero-board h2{
-    color:var(--chalk);
-    font-size:19px;
-    margin:0 0 8px;
-  }
-  .hero-board p{ color:#DCE6DD; font-size:14px; margin-bottom:0; }
+    header p {
+      font-size: 0.9rem;
+      color: #cbd5e0;
+      margin-top: 4px;
+    }
 
-  .quick-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin-bottom:22px;
-  }
-  .quick-card{
-    background:#fff;
-    border:1px solid var(--paper-line);
-    border-radius:10px;
-    padding:14px;
-    cursor:pointer;
-    text-align:left;
-  }
-  .quick-card:active{ background:#FBF8F0; }
-  .quick-card .k-title{ font-weight:600; font-size:14px; margin-bottom:3px; }
-  .quick-card .k-sub{ font-size:12px; color:var(--ink-soft); }
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+      z-index: 1000;
+      border-top: 1px solid #e2e8f0;
+    }
 
-  .section-label{
-    font-size:12px;
-    text-transform:none;
-    color:var(--gold);
-    font-weight:700;
-    margin:0 0 10px;
-    border-left:3px solid var(--gold);
-    padding-left:8px;
-  }
+    nav button {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: 12px 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
 
-  /* ---------- Lists (guide / modules) ---------- */
-  .card-list{ display:flex; flex-direction:column; gap:10px; }
-  .list-card{
-    background:#fff;
-    border:1px solid var(--paper-line);
-    border-radius:10px;
-    padding:14px 16px;
-    cursor:pointer;
-  }
-  .list-card:active{ background:#FBF8F0; }
-  .list-card .lc-title{ font-weight:600; font-size:15px; margin-bottom:3px; }
-  .list-card .lc-sub{ font-size:13px; color:var(--ink-soft); }
-  .list-card .lc-arrow{ float:right; color:var(--red-pen); font-size:16px; }
+    nav button.active {
+      color: var(--primary);
+      background-color: #f0f7f4;
+      border-top: 3px solid var(--primary);
+      padding-top: 9px;
+    }
 
-  .accordion-item{
-    background:#fff;
-    border:1px solid var(--paper-line);
-    border-radius:10px;
-    margin-bottom:10px;
-    overflow:hidden;
-  }
-  .accordion-head{
-    padding:13px 16px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    cursor:pointer;
-    font-weight:600;
-    font-size:14.5px;
-  }
-  .accordion-head .plus{ color:var(--red-pen); font-size:18px; font-weight:400; }
-  .accordion-body{
-    display:none;
-    padding:0 16px 15px;
-  }
-  .accordion-item.open .accordion-body{ display:block; }
+    #app {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 0 16px;
+    }
 
-  .step-card{
-    background:#fff;
-    border:1px solid var(--paper-line);
-    border-left:4px solid var(--chalkboard);
-    border-radius:8px;
-    padding:14px 16px;
-    margin-bottom:12px;
-  }
-  .step-card h3{ font-size:15px; margin:0 0 6px; }
-  .prompt-chip{
-    display:inline-block;
-    background:var(--chalkboard);
-    color:var(--chalk);
-    font-size:11.5px;
-    padding:3px 9px;
-    border-radius:20px;
-    margin:2px 4px 0 0;
-    cursor:pointer;
-  }
+    h2 {
+      font-size: 1.3rem;
+      color: var(--primary);
+      margin-bottom: 12px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 4px;
+    }
 
-  /* ---------- Prompt Studio ---------- */
-  .cat-tabs{ display:flex; gap:8px; margin-bottom:14px; }
-  .cat-tab{
-    border:1px solid var(--chalkboard);
-    color:var(--chalkboard);
-    background:transparent;
-    padding:6px 14px;
-    border-radius:20px;
-    font-size:13px;
-    cursor:pointer;
-  }
-  .cat-tab.active{ background:var(--chalkboard); color:var(--chalk); }
+    h3 {
+      font-size: 1.1rem;
+      margin-top: 16px;
+      margin-bottom: 8px;
+      color: #4a5568;
+    }
 
-  .prompt-card{
-    background:#fff;
-    border:1px solid var(--paper-line);
-    border-radius:10px;
-    padding:15px 16px;
-    margin-bottom:14px;
-  }
-  .prompt-card .pc-code{
-    display:inline-block;
-    font-family:Georgia, serif;
-    font-weight:700;
-    color:var(--red-pen);
-    font-size:13px;
-    border:1px solid var(--red-pen-soft);
-    border-radius:6px;
-    padding:1px 7px;
-    margin-bottom:6px;
-  }
-  .prompt-card h3{ font-size:15px; margin:0 0 8px; }
-  .version-toggle{
-    display:flex;
-    gap:6px;
-    margin-bottom:10px;
-  }
-  .v-btn{
-    flex:1;
-    border:1px solid var(--paper-line);
-    background:#FAF7EF;
-    padding:6px 0;
-    font-size:12.5px;
-    border-radius:7px;
-    cursor:pointer;
-    color:var(--ink-soft);
-  }
-  .v-btn.active{ background:var(--chalkboard); color:var(--chalk); border-color:var(--chalkboard); }
-  .prompt-text{
-    background:#FAF7EF;
-    border:1px dashed var(--paper-line);
-    border-radius:8px;
-    padding:11px 12px;
-    font-size:13px;
-    line-height:1.5;
-    color:var(--ink);
-    margin-bottom:10px;
-    max-height:170px;
-    overflow-y:auto;
-  }
-  .btn-row{ display:flex; gap:8px; }
-  .btn{
-    flex:1;
-    border:none;
-    border-radius:8px;
-    padding:9px 0;
-    font-size:13px;
-    font-weight:600;
-    cursor:pointer;
-  }
-  .btn-copy{ background:var(--chalkboard); color:var(--chalk); }
-  .btn-copy:active{ background:var(--chalkboard-dark); }
-  .btn-wa{ background:#2E7D5B; color:#fff; }
-  .btn-wa:active{ opacity:0.85; }
-  .btn.copied{ background:var(--gold) !important; }
+    .card {
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      border: 1px solid #e2e8f0;
+    }
 
-  /* ---------- Samples ---------- */
-  .sample-card{
-    background:#fff;
-    border:1px solid var(--paper-line);
-    border-radius:10px;
-    padding:15px 16px;
-    margin-bottom:14px;
-  }
-  .sample-card h3{ font-size:14.5px; margin:0 0 3px; }
-  .sample-meta{ font-size:12px; color:var(--gold); margin-bottom:9px; }
+    .card h4 {
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
 
-  /* ---------- Pilot ---------- */
-  .feedback-q{
-    display:flex;
-    gap:10px;
-    padding:11px 0;
-    border-bottom:1px solid var(--paper-line);
-  }
-  .feedback-q:last-child{ border-bottom:none; }
-  .feedback-q .qn{
-    font-family:Georgia, serif;
-    color:var(--red-pen);
-    font-weight:700;
-    font-size:14px;
-  }
-  .feedback-q p{ margin:0; font-size:13.5px; color:var(--ink); }
+    .card p {
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
 
-  .timeline-card{
-    background:#fff;
-    border:1px solid var(--paper-line);
-    border-left:4px solid var(--gold);
-    border-radius:8px;
-    padding:14px 16px;
-    margin-bottom:12px;
-  }
-  .timeline-card .tc-week{ font-weight:700; font-size:13px; color:var(--gold); margin-bottom:2px; }
-  .timeline-card h3{ font-size:14.5px; margin:0 0 8px; }
-  .tc-row{ font-size:13px; margin-bottom:5px; color:var(--ink-soft); }
-  .tc-row b{ color:var(--ink); }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      border-radius: 4px;
+      text-transform: uppercase;
+      margin-left: 8px;
+    }
+    
+    .badge-high {
+      background: #fed7d7;
+      color: var(--danger);
+    }
 
-  /* ---------- Bottom nav ---------- */
-  nav.tabbar{
-    position:sticky;
-    bottom:0;
-    display:flex;
-    background:var(--chalkboard);
-    padding:8px 6px calc(8px + env(safe-area-inset-bottom));
-    flex-shrink:0;
-  }
-  nav.tabbar button{
-    flex:1;
-    background:none;
-    border:none;
-    color:#9EB2A3;
-    font-size:11px;
-    padding:6px 2px 2px;
-    cursor:pointer;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:4px;
-  }
-  nav.tabbar button.active{ color:var(--chalk); }
-  nav.tabbar .dot{
-    width:6px; height:6px; border-radius:50%;
-    background:currentColor;
-    opacity:0;
-  }
-  nav.tabbar button.active .dot{ opacity:1; background:var(--red-pen); }
+    .badge-success {
+      background: #c6f6d5;
+      color: var(--success);
+    }
 
-  ::-webkit-scrollbar{ width:0; height:0; }
-</style>
+    .badge-whatsapp {
+      background: #dcf8c6;
+      color: var(--whatsapp);
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #4a5568;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #cbd5e0;
+      border-radius: 6px;
+      font-size: 1rem;
+      background-color: #f8fafc;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      background-color: #fff;
+    }
+
+    .btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background-color: #16523e;
+    }
+
+    .btn-secondary {
+      background-color: #edf2f7;
+      color: var(--text);
+      margin-top: 8px;
+    }
+
+    .btn-secondary:hover {
+      background-color: #e2e8f0;
+    }
+
+    .btn-success {
+      background-color: var(--success);
+    }
+
+    .btn-success:hover {
+      background-color: #2f855a;
+    }
+
+    .btn-whatsapp {
+      background-color: var(--whatsapp);
+    }
+
+    .btn-whatsapp:hover {
+      background-color: #128C7E;
+    }
+
+    .btn-danger {
+      background-color: var(--danger);
+    }
+
+    .btn-danger:hover {
+      background-color: #c53030;
+    }
+
+    .sync-queue {
+      background: #fffaf0;
+      border: 1px solid #f6ad55;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 16px;
+    }
+
+    .sync-queue h4 {
+      color: #c05621;
+      margin-bottom: 8px;
+    }
+
+    .sync-item {
+      background: white;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sync-item-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .offline-indicator {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: var(--success);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 2000;
+      display: none;
+    }
+
+    .offline-indicator.visible {
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background: #f7fafc;
+      font-weight: 600;
+      color: #4a5568;
+    }
+
+    .stats-card {
+      background: linear-gradient(135deg, var(--primary), #1a5c47);
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .stats-card h4 {
+      font-size: 2rem;
+      margin-bottom: 4px;
+    }
+
+    .stats-card p {
+      font-size: 0.9rem;
+      color: #cbd5e0;
+    }
+
+    .school-select {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+  </style>
 </head>
 <body>
-<div id="app">
 
-  <header id="app-header">
-    <div class="back-row" id="back-row" style="display:none;">
-      <button class="back-btn" id="back-btn">← Back</button>
+  <div id="offlineIndicator" class="offline-indicator">📶 Offline Mode</div>
+
+  <header>
+    <div style="display:flex; align-items:center; justify-content:center; gap:14px; max-width:600px; margin:0 auto;">
+      <img src="icons/icon-192.png" alt="Zaka District Schools Hub crest" style="width:60px; height:60px; flex-shrink:0;">
+      <div style="text-align:left;">
+        <h1 style="margin:0;">ZAKA DISTRICT SCHOOLS HUB</h1>
+        <p style="margin:4px 0 0;">AI Portal • Version 5.0 (WhatsApp Enrollment + All Schools)</p>
+      </div>
     </div>
-    <div class="eyebrow" id="header-eyebrow">Zaka District Schools</div>
-    <h1 id="header-title">AI Hub</h1>
-    <div class="chalk-rule"></div>
   </header>
 
-  <main id="main">
-    <section id="view-home" class="active"></section>
-    <section id="view-guide"></section>
-    <section id="view-modules"></section>
-    <section id="view-prompts"></section>
-    <section id="view-samples"></section>
-    <section id="view-pilot"></section>
-  </main>
+  <main id="app"></main>
 
-  <nav class="tabbar">
-    <button data-tab="home" class="active"><span>⌂</span><span class="dot"></span>Home</button>
-    <button data-tab="guide"><span>▤</span><span class="dot"></span>Guide</button>
-    <button data-tab="modules"><span>▥</span><span class="dot"></span>Modules</button>
-    <button data-tab="prompts"><span>✎</span><span class="dot"></span>Prompts</button>
-    <button data-tab="pilot"><span>◷</span><span class="dot"></span>Pilot</button>
+  <nav>
+    <button onclick="setActiveNav(this, renderTeacherMode)">📝<br>Teacher</button>
+    <button onclick="setActiveNav(this, renderLearnerMode)">📖<br>Learner</button>
+    <button onclick="setActiveNav(this, renderEnrollmentMode)">📊<br>Enrollment</button>
+    <button onclick="setActiveNav(this, renderFormsPortal)">📋<br>Forms</button>
+    <button onclick="setActiveNav(this, renderNotices)">🔔<br>Notices</button>
   </nav>
-</div>
 
-<script src="content.js"></script>
-<script src="app.js"></script>
+  <script>
+    // ZAKA DISTRICT SCHOOLS DATABASE
+    const zakaSchools = {
+      secondary: [
+        { name: "Zaka Secondary School", code: "ZAK001", ward: "Central" },
+        { name: "St. Anthony's High School", code: "ZAK002", ward: "Mission" },
+        { name: "Danda Secondary School", code: "ZAK003", ward: "Danda" },
+        { name: "Svuure Secondary School", code: "ZAK004", ward: "Svuure" },
+        { name: "Dzoro High School", code: "ZAK005", ward: "Dzoro" },
+        { name: "Muzinda Secondary School", code: "ZAK006", ward: "Muzinda" },
+        { name: "Machiva Secondary School", code: "ZAK007", ward: "Machiva" },
+        { name: "Mutonhori High School", code: "ZAK008", ward: "Mutonhori" },
+        { name: "Gambiza Secondary School", code: "ZAK009", ward: "Gambiza" },
+        { name: "Nyagadza Secondary School", code: "ZAK010", ward: "Nyagadza" }
+      ],
+      primary: [
+        { name: "Charingeno Primary School", code: "ZAKP001", ward: "Charingeno" },
+        { name: "Dabwa Primary School", code: "ZAKP002", ward: "Dabwa" },
+        { name: "Muzinda Primary School", code: "ZAKP003", ward: "Muzinda" },
+        { name: "Muzondidya Primary School", code: "ZAKP004", ward: "Muzondidya" },
+        { name: "Nyagadza Primary School", code: "ZAKP005", ward: "Nyagadza" },
+        { name: "Gambiza Primary School", code: "ZAKP006", ward: "Gambiza" },
+        { name: "Chakwinda Primary School", code: "ZAKP007", ward: "Chakwinda" },
+        { name: "Mucheke Primary School", code: "ZAKP008", ward: "Mucheke" },
+        { name: "Zaka Central Primary School", code: "ZAKP009", ward: "Central" },
+        { name: "St. Mary's Primary School", code: "ZAKP010", ward: "Mission" }
+      ]
+    };
+
+    // DISTRICT OFFICE WHATSAPP NUMBER
+    const DISTRICT_WHATSAPP = "263777212895"; // Temporary: Lawson's number, until the DSI assigns an official contact
+
+    const content = {
+      subjects: [
+        { id: "english", name: "English Language", code: "4005" },
+        { id: "mathematics", name: "Mathematics", code: "4008" },
+        { id: "combined_science", name: "Combined Science", code: "4012" },
+        { id: "frs", name: "Family & Religious Studies", code: "4045" },
+        { id: "shona", name: "Shona", code: "4016" },
+        { id: "literature", name: "Literature in English", code: "4006" },
+        { id: "ndebele", name: "Ndebele", code: "4017" },
+        { id: "geography", name: "Geography", code: "4020" },
+        { id: "history", name: "History", code: "4025" },
+        { id: "economic_history", name: "Economic History", code: "4026" },
+        { id: "heritage", name: "Heritage Studies", code: "4047" },
+        { id: "commerce", name: "Commerce", code: "4030" },
+        { id: "accounts", name: "Accounts", code: "4035" },
+        { id: "economics", name: "Economics", code: "4036" },
+        { id: "business_enterprise", name: "Business & Enterprise", code: "4048" },
+        { id: "agriculture", name: "Agriculture", code: "4040" },
+        { id: "ttd", name: "Textile Technology & Design (TTD)", code: "4063" },
+        { id: "building", name: "Building & Construction", code: "4060" },
+        { id: "woodwork", name: "Woodwork", code: "4061" },
+        { id: "metalwork", name: "Metalwork", code: "4062" },
+        { id: "food_nutrition", name: "Food & Nutrition", code: "4064" },
+        { id: "computer_science", name: "Computer Science", code: "4021" }
+      ],
+      teacher: {
+        title: "Teacher AI Copilot",
+        description: "WhatsApp-ready ZIMSEC syllabus prompt builders for all subjects.",
+        prompts: [
+          { name: "Scheme of Work Generator", text: "Create a Form 3 English Language Scheme of Work for Term 1 based on the current ZIMSEC syllabus focusing on Descriptive Compositions." },
+          { name: "Daily Lesson Plan Builder", text: "Generate a 45-minute lesson plan for Form 1 Comprehension: Skimming and Scanning techniques, including interactive blackboard exercises." },
+          { name: "Mathematics Problem Set", text: "Generate 10 Form 2 Mathematics problems on Algebraic Expressions with step-by-step solutions aligned to ZIMSEC 4008." },
+          { name: "Science Practical Guide", text: "Create a Form 3 Combined Science practical activity on Acids and Bases with safety guidelines and assessment rubric." },
+          { name: "Shona Composition Prompt", text: "Gadzira chirongwa chekudzidzisa Form 2 Shona kunyora nyaya dzetsananguro nematambudziko anowanzo kusangana nevadzidzi." },
+          { name: "Literature Analysis", text: "Create a lesson plan for analysing Zimbabwean poetry in Literature in English, focusing on metaphor, simile, and cultural themes." },
+          { name: "TTD Project Guide", text: "Design a Form 3 Textile Technology & Design practical lesson on pattern drafting and garment construction with assessment criteria." }
+        ]
+      },
+      learner: {
+        title: "Learner Portal",
+        description: "Offline Notes and Practice Tasks for Forms 1-4 (All ZIMSEC Subjects)",
+        forms: {
+          1: { 
+            topics: [
+              { subject: "English", name: "Comprehension", notes: "Identify the main idea, observe tone, and capture contextual meaning.", practice: "Read Chapter 1 text and answer the 5 structured evaluation questions." },
+              { subject: "Mathematics", name: "Number Systems", notes: "Natural numbers, integers, rational and irrational numbers.", practice: "Complete exercises 1-20 on number operations." },
+              { subject: "Combined Science", name: "Living Things", notes: "Characteristics of living organisms, classification basics.", practice: "Draw and label a plant cell." },
+              { subject: "Shona", name: "Kuverenga nokunzwisisa", notes: "Kuverenga ndima uchinzwisisa zvirevo, mashandisirwo emutauro.", practice: "Verenga ndima yekutanga ubvunze mibvunzo yekunzwisisa." },
+              { subject: "Literature in English", name: "Introduction to Literature", notes: "What is literature? Genres: prose, poetry, drama.", practice: "Read a short Zimbabwean poem and identify the theme." },
+              { subject: "Family & Religious Studies", name: "Family Relationships", notes: "Family structures, roles and responsibilities, respect for elders.", practice: "Draw your family tree and describe each member's role." },
+              { subject: "Heritage Studies", name: "Introduction to Heritage", notes: "What is heritage? Natural vs cultural heritage, importance of preservation.", practice: "List 5 cultural heritage sites in Zimbabwe and their significance." },
+              { subject: "Textile Technology & Design (TTD)", name: "Textile Fibres & Fabrics", notes: "Natural and synthetic fibres, fabric construction methods (weaving, knitting), fabric properties.", practice: "Collect and identify 10 different fabric samples, classify by fibre type." },
+              { subject: "Building & Construction", name: "Building Materials", notes: "Bricks, cement, sand, aggregates - properties and uses.", practice: "Identify and describe 10 building materials used in your community." }
+            ] 
+          },
+          2: { 
+            topics: [
+              { subject: "English", name: "Language Structure", notes: "Parts of speech mastery, focus on tense consistency.", practice: "Correct the 10 sentence-error fragments provided in the worksheet." },
+              { subject: "Mathematics", name: "Algebra", notes: "Algebraic expressions, simplification, factorisation.", practice: "Simplify 15 algebraic expressions." },
+              { subject: "Geography", name: "Weather and Climate", notes: "Weather elements, instruments, Zimbabwe's climate.", practice: "Record daily weather data for 7 days." },
+              { subject: "Shona", name: "Mutauro (Grammar)", notes: "Chikamu chetari, zita, chiito, zvirevo.", practice: "Tsiva zvikamu zvetaura muzviratidzo gumi." },
+              { subject: "Literature in English", name: "Poetry Analysis", notes: "Figurative language: metaphor, simile, personification.", practice: "Analyse 2 poems identifying literary devices used." },
+              { subject: "Family & Religious Studies", name: "Religious Festivals", notes: "Major religious celebrations in Zimbabwe: Christmas, Easter, Eid, Passover.", practice: "Compare how two different religions celebrate their major festival." },
+              { subject: "Heritage Studies", name: "Great Zimbabwe Monument", notes: "History, architecture, archaeological significance, UNESCO World Heritage status.", practice: "Write an essay on why Great Zimbabwe is important to national identity." },
+              { subject: "Textile Technology & Design (TTD)", name: "Sewing Equipment & Safety", notes: "Sewing machine parts, operation, maintenance, workshop safety rules.", practice: "Practice threading a sewing machine and sew straight seams on fabric samples." },
+              { subject: "Building & Construction", name: "Site Preparation", notes: "Clearing, setting out, foundations, excavation techniques.", practice: "Draw a site plan showing foundation layout for a 2-room house." }
+            ] 
+          },
+          3: { 
+            topics: [
+              { subject: "English", name: "Paper 1 Composition", notes: "Narrative & Descriptive structures. Planning hooks.", practice: "Write a 350-word composition titled: 'The day our school won the sports shield'." },
+              { subject: "Commerce", name: "Trade", notes: "Domestic and foreign trade, balance of payments.", practice: "Essay: 'The role of trade in Zimbabwe's economy'." },
+              { subject: "Agriculture", name: "Crop Production", notes: "Land preparation, planting methods, crop rotation.", practice: "Design a crop rotation plan for a 1-hectare farm." },
+              { subject: "Shona", name: "Kunyora (Composition)", notes: "Kunyora nyaya, tsananguro, zvinyorwa zvehofisi.", practice: "Nyora nyaya inonzi 'Zvakaitika paMhemberero yechikoro'." },
+              { subject: "Literature in English", name: "Drama & Prose", notes: "Plot, characterisation, setting, themes in Zimbabwean texts.", practice: "Read a short story and write character analysis." },
+              { subject: "Family & Religious Studies", name: "Life Rites & Ceremonies", notes: "Birth, initiation, marriage, death rituals across cultures and religions.", practice: "Interview an elder about traditional marriage ceremonies in your culture." },
+              { subject: "Heritage Studies", name: "Indigenous Knowledge Systems", notes: "Traditional medicine, farming methods, weather prediction, storytelling.", practice: "Document 3 indigenous practices from your community and explain their value." },
+              { subject: "Textile Technology & Design (TTD)", name: "Pattern Drafting & Garment Construction", notes: "Body measurements, pattern blocks, cutting layout, assembly techniques, fitting adjustments.", practice: "Take body measurements, draft a skirt pattern, and construct a simple garment." },
+              { subject: "Building & Construction", name: "Brickwork & Masonry", notes: "Brick bonds, mortar mixing, laying techniques, damp proof courses.", practice: "Build a small brick wall model showing stretcher bond pattern." }
+            ] 
+          },
+          4: { 
+            topics: [
+              { subject: "English", name: "ZIMSEC Exam Prep", notes: "Time management allocations: Spend 45 minutes on section A, 45 minutes on Section B.", practice: "Complete the full mock assessment block Paper 1 2024 under strict timing." },
+              { subject: "Mathematics", name: "Calculus Intro", notes: "Differentiation basics, gradients, rates of change.", practice: "Solve 20 differentiation problems." },
+              { subject: "History", name: "Colonialism in Zimbabwe", notes: "BSAC rule, colonial policies, resistance movements.", practice: "Essay: 'Evaluate the impact of colonialism on Zimbabwe'." },
+              { subject: "Shona", name: "ZIMSEC Exam Prep", notes: "Mibvunzo yepaper 1 ne2, kugadzirira bvunzo dzeO-Level.", practice: "Pindura mibvunzo yebvunzo dze2024 Shona Paper 1." },
+              { subject: "Literature in English", name: "ZIMSEC Exam Preparation", notes: "Analysing unseen poetry, essay writing on set texts.", practice: "Write essay on prescribed novel under timed conditions." },
+              { subject: "Family & Religious Studies", name: "Ethics & Moral Values", notes: "Right vs wrong, decision-making, peer pressure, substance abuse prevention.", practice: "Case study: 'How would you handle peer pressure to use drugs?'" },
+              { subject: "Heritage Studies", name: "Heritage & National Development", notes: "Tourism, economic value, preservation challenges, community involvement.", practice: "Propose a community project to preserve a local heritage site." },
+              { subject: "Textile Technology & Design (TTD)", name: "Fashion Design & Entrepreneurship", notes: "Design principles, fashion illustration, costing, marketing, business planning for textile ventures.", practice: "Create a fashion design portfolio and write a business plan for a tailoring/dressmaking business." },
+              { subject: "Building & Construction", name: "Roofing & Finishes", notes: "Roof trusses, covering materials, plastering, painting, tiling.", practice: "Calculate materials needed to roof a 6m x 4m building." }
+            ] 
+          }
+        }
+      },
+      forms: {
+        title: "Administrative & RBM Forms",
+        description: "Fill and store school operational records, RBM appraisals, and narrative reports completely offline.",
+        availableForms: [
+          { id: "annex_a", name: "Annex A - Termly School Returns", category: "School Returns", fields: [
+            { label: "School Name", type: "text", id: "school_name" },
+            { label: "School Code (EMIS)", type: "text", id: "school_code" },
+            { label: "District", type: "select", options: ["Zaka", "Chiredzi", "Masvingo", "Gutu", "Mwenezi"], id: "district" },
+            { label: "Term", type: "select", options: ["Term 1", "Term 2", "Term 3"], id: "term" },
+            { label: "Year", type: "number", id: "year" },
+            { label: "Total Learners Enrolled (Secondary)", type: "number", id: "total_learners" },
+            { label: "Form 1 Enrollment", type: "number", id: "form1" },
+            { label: "Form 2 Enrollment", type: "number", id: "form2" },
+            { label: "Form 3 Enrollment", type: "number", id: "form3" },
+            { label: "Form 4 Enrollment", type: "number", id: "form4" },
+            { label: "Boys", type: "number", id: "boys" },
+            { label: "Girls", type: "number", id: "girls" },
+            { label: "New Admissions (Term)", type: "number", id: "admissions" },
+            { label: "Transfers Out", type: "number", id: "transfers_out" },
+            { label: "Dropouts (Term)", type: "number", id: "dropouts" },
+            { label: "Total Teaching Staff", type: "number", id: "teaching_staff" },
+            { label: "Teacher Vacancies", type: "number", id: "vacancies" },
+            { label: "Head Teacher Name", type: "text", id: "head_name" },
+            { label: "Date of Submission", type: "date", id: "submit_date" }
+          ]},
+          { id: "hr_leave", name: "Official Leave Application", category: "HR", fields: [
+            { label: "Teacher Name", type: "text", id: "teacher_name" },
+            { label: "EC Number", type: "text", id: "ec_number" },
+            { label: "School", type: "text", id: "school" },
+            { label: "Type of Leave Requested", type: "select", options: ["Sick Leave", "Urgent Private Affairs", "Annual Leave", "Maternity Leave", "Paternity Leave"], id: "leave_type" },
+            { label: "Commencement Date", type: "date", id: "start_date" },
+            { label: "Return Date", type: "date", id: "return_date" },
+            { label: "Reason for Leave", type: "textarea", id: "reason" }
+          ]},
+          { id: "bspz_stats", name: "BSPZ Academic Statistics", category: "Academic", fields: [
+            { label: "Reporting Month", type: "month", id: "report_month" },
+            { label: "School Name", type: "text", id: "school_name" },
+            { label: "Form 4 Sitting Enrollment", type: "number", id: "form4_sitting" },
+            { label: "Form 4 Actual Sitting", type: "number", id: "form4_actual" },
+            { label: "Pass Rate (%)", type: "number", id: "pass_rate" }
+          ]},
+          { id: "rbm_appraisal", name: "RBM Performance Appraisal (Teacher)", category: "RBM", fields: [
+            { label: "Teacher Name", type: "text", id: "teacher_name" },
+            { label: "EC Number", type: "text", id: "ec_number" },
+            { label: "School", type: "text", id: "school" },
+            { label: "Position", type: "select", options: ["Teacher", "Senior Teacher", "Head of Department", "Deputy Head", "Head"], id: "position" },
+            { label: "Performance Period From", type: "date", id: "period_from" },
+            { label: "Performance Period To", type: "date", id: "period_to" },
+            { label: "Key Output 1 (Description)", type: "text", id: "output1" },
+            { label: "Target 1", type: "text", id: "target1" },
+            { label: "Actual Performance 1", type: "text", id: "actual1" },
+            { label: "Rating 1 (1-4)", type: "select", options: ["1", "2", "3", "4"], id: "rating1" },
+            { label: "Key Output 2 (Description)", type: "text", id: "output2" },
+            { label: "Target 2", type: "text", id: "target2" },
+            { label: "Actual Performance 2", type: "text", id: "actual2" },
+            { label: "Rating 2 (1-4)", type: "select", options: ["1", "2", "3", "4"], id: "rating2" },
+            { label: "Key Output 3 (Description)", type: "text", id: "output3" },
+            { label: "Target 3", type: "text", id: "target3" },
+            { label: "Actual Performance 3", type: "text", id: "actual3" },
+            { label: "Rating 3 (1-4)", type: "select", options: ["1", "2", "3", "4"], id: "rating3" },
+            { label: "Total Score (Sum of Ratings)", type: "number", id: "total_score" },
+            { label: "Overall Rating", type: "select", options: ["Unsatisfactory", "Requires Improvement", "Satisfactory", "Very Good", "Excellent"], id: "overall_rating" },
+            { label: "Appraiser Comments", type: "textarea", id: "appraiser_comments" },
+            { label: "Appraisee Comments", type: "textarea", id: "appraisee_comments" }
+          ]},
+          { id: "hod_narrative", name: "HOD Termly Narrative Report", category: "Reports", fields: [
+            { label: "HOD Name", type: "text", id: "hod_name" },
+            { label: "Department", type: "select", options: ["English", "Mathematics", "Sciences", "Humanities", "Commercial", "Practical", "Languages"], id: "department" },
+            { label: "School", type: "text", id: "school" },
+            { label: "Term", type: "select", options: ["Term 1", "Term 2", "Term 3"], id: "term" },
+            { label: "Year", type: "number", id: "year" },
+            { label: "Teaching & Learning Activities", type: "textarea", id: "teaching_activities" },
+            { label: "Supervision Conducted (Number of Teachers)", type: "number", id: "supervision_count" },
+            { label: "Key Strengths Observed", type: "textarea", id: "strengths" },
+            { label: "Areas for Improvement", type: "textarea", id: "improvements" },
+            { label: "Resource Challenges", type: "textarea", id: "challenges" },
+            { label: "Recommendations", type: "textarea", id: "recommendations" }
+          ]},
+          { id: "head_narrative", name: "Head Teacher Termly Narrative Report", category: "Reports", fields: [
+            { label: "Head Teacher Name", type: "text", id: "head_name" },
+            { label: "School", type: "text", id: "school" },
+            { label: "Term", type: "select", options: ["Term 1", "Term 2", "Term 3"], id: "term" },
+            { label: "Year", type: "number", id: "year" },
+            { label: "Enrollment Overview", type: "textarea", id: "enrollment" },
+            { label: "Staffing Overview", type: "textarea", id: "staffing" },
+            { label: "Academic Performance Summary", type: "textarea", id: "academic" },
+            { label: "Infrastructure & Resources", type: "textarea", id: "infrastructure" },
+            { label: "Major Challenges", type: "textarea", id: "challenges" },
+            { label: "Support Needed from District", type: "textarea", id: "support_needed" }
+          ]}
+        ]
+      },
+      notices: {
+        title: "Official District Notices", 
+        description: "Directives from District Schools Office, HR, and BSPZ.",
+        items: [
+          { id: "notice_001", date: "2025-09-01", from: "District Schools Office", subject: "Submission Deadline: Term 3 Annex A", summary: "Please ensure all data sets are compiled by 20 September 2025. Offline queues via this portal will automatically sync.", priority: "High" },
+          { id: "notice_002", date: "2025-09-05", from: "BSPZ Coordinator", subject: "Form 4 Mock Examination Registration", summary: "All schools must submit Form 4 candidate lists by 15 September 2025. Use the Enrollment Tab to submit.", priority: "High" },
+          { id: "notice_003", date: "2025-09-10", from: "HR Department", subject: "RBM Appraisal Cycle 2025", summary: "Mid-year RBM appraisals must be completed by 30 September 2025. Submit via Forms Portal.", priority: "Medium" },
+          { id: "notice_004", date: "2025-09-15", from: "District Schools Office", subject: "Head Teachers Meeting", summary: "All Head Teachers to attend quarterly meeting on 25 September 2025 at District Office.", priority: "Medium" }
+        ]
+      }
+    };
+
+    // Service Worker (registered from an external file for reliable offline caching)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch((err) => console.error('SW failed:', err));
+      });
+    }
+
+    function updateOfflineIndicator() {
+      const indicator = document.getElementById('offlineIndicator');
+      if (!navigator.onLine) indicator.classList.add('visible');
+      else indicator.classList.remove('visible');
+    }
+
+    window.addEventListener('online', updateOfflineIndicator);
+    window.addEventListener('offline', updateOfflineIndicator);
+
+    const STORAGE_KEY = 'zaka_hub_submissions';
+    const ENROLLMENT_KEY = 'zaka_enrollment_data';
+
+    function getSubmissions() {
+      const data = localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : [];
+    }
+
+    function saveSubmission(formId, formData) {
+      const submissions = getSubmissions();
+      const newSubmission = { id: Date.now().toString(), formId, formData, timestamp: new Date().toISOString(), synced: false };
+      submissions.push(newSubmission);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(submissions));
+      return newSubmission;
+    }
+
+    function deleteSubmission(submissionId) {
+      let submissions = getSubmissions();
+      submissions = submissions.filter(s => s.id !== submissionId);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(submissions));
+    }
+
+    function saveEnrollmentData(data) {
+      const enrollments = localStorage.getItem(ENROLLMENT_KEY) ? JSON.parse(localStorage.getItem(ENROLLMENT_KEY)) : [];
+      enrollments.push({ ...data, id: Date.now().toString(), timestamp: new Date().toISOString() });
+      localStorage.setItem(ENROLLMENT_KEY, JSON.stringify(enrollments));
+    }
+
+    function getEnrollmentData() {
+      const data = localStorage.getItem(ENROLLMENT_KEY);
+      return data ? JSON.parse(data) : [];
+    }
+
+    function setActiveNav(button, renderFunc) {
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      button.classList.add('active');
+      renderFunc();
+    }
+
+    function renderTeacherMode() {
+      const t = content.teacher;
+      let html = `<h2>${t.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${t.description}</p>`;
+      t.prompts.forEach(p => {
+        html += `
+          <div class="card">
+            <h4>${p.name}</h4>
+            <p style="background:#f7fafc; padding:10px; border-left:3px solid var(--secondary); font-size:0.9rem; font-style:italic;">"${p.text.replace(/"/g, '&quot;')}"</p>
+            <button class="btn" style="margin-top:8px; width:100%;" onclick="navigator.clipboard.writeText('${p.text.replace(/'/g, "\\'")}'); alert('Prompt copied!')">📋 Copy Prompt</button>
+          </div>`;
+      });
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function renderLearnerMode() {
+      const l = content.learner;
+      let html = `<h2>${l.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${l.description}</p>`;
+      Object.keys(l.forms).forEach(f => {
+        html += `<h3>Form ${f}</h3>`;
+        l.forms[f].topics.forEach(t => {
+          html += `
+            <div class="card">
+              <h4>📖 ${t.subject}: ${t.name}</h4>
+              <p><b>Notes:</b> ${t.notes}</p>
+              <p><b>Practice:</b> ${t.practice}</p>
+            </div>`;
+        });
+      });
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function renderEnrollmentMode() {
+      const enrollments = getEnrollmentData();
+      const totalStudents = enrollments.reduce((sum, e) => sum + (parseInt(e.total_learners) || 0), 0);
+      const totalBoys = enrollments.reduce((sum, e) => sum + (parseInt(e.boys) || 0), 0);
+      const totalGirls = enrollments.reduce((sum, e) => sum + (parseInt(e.girls) || 0), 0);
+
+      let html = `<h2>📊 District Enrollment Statistics</h2>`;
+      
+      html += `<div class="stats-card"><h4>${totalStudents}</h4><p>Total Enrollment (All Schools)</p></div>`;
+      html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">`;
+      html += `<div class="stats-card" style="background:linear-gradient(135deg, #2b6cb0, #1a365d);"><h4>${totalBoys}</h4><p>Total Boys</p></div>`;
+      html += `<div class="stats-card" style="background:linear-gradient(135deg, #d53f8c, #831843);"><h4>${totalGirls}</h4><p>Total Girls</p></div></div>`;
+
+      html += `<div class="card"><h4>📝 Submit School Enrollment</h4>`;
+      html += `<form onsubmit="submitEnrollment(event)">`;
+      html += `<label>Select School</label>`;
+      html += `<select id="school_select" required onchange="autoFillSchoolCode()">`;
+      html += `<option value="">-- Choose School --</option>`;
+      html += `<optgroup label="Secondary Schools">`;
+      zakaSchools.secondary.forEach(s => html += `<option value="${s.name}" data-code="${s.code}">${s.name} (${s.code})</option>`);
+      html += `</optgroup><optgroup label="Primary Schools">`;
+      zakaSchools.primary.forEach(s => html += `<option value="${s.name}" data-code="${s.code}">${s.name} (${s.code})</option>`);
+      html += `</optgroup></select>`;
+      
+      html += `<label>School Code (EMIS)</label><input type="text" id="school_code" readonly required>`;
+      html += `<label>Term</label><select id="term" required><option>Term 1</option><option>Term 2</option><option>Term 3</option></select>`;
+      html += `<label>Year</label><input type="number" id="year" value="2026" required>`;
+      html += `<label>Total Learners Enrolled</label><input type="number" id="total_learners" required>`;
+      html += `<label>Boys</label><input type="number" id="boys" required>`;
+      html += `<label>Girls</label><input type="number" id="girls" required>`;
+      html += `<label>Form 1 Enrollment</label><input type="number" id="form1" required>`;
+      html += `<label>Form 2 Enrollment</label><input type="number" id="form2" required>`;
+      html += `<label>Form 3 Enrollment</label><input type="number" id="form3" required>`;
+      html += `<label>Form 4 Enrollment</label><input type="number" id="form4" required>`;
+      
+      html += `<button type="submit" class="btn btn-whatsapp">💬 Submit via WhatsApp to District Office</button>`;
+      html += `</form></div>`;
+
+      if (enrollments.length > 0) {
+        html += `<h3 style="margin-top:20px;">📤 Recent Submissions</h3>`;
+        enrollments.slice(-5).reverse().forEach(e => {
+          html += `
+            <div class="card">
+              <h4>${e.school_name}</h4>
+              <p><b>Term:</b> ${e.term} ${e.year} | <b>Total:</b> ${e.total_learners} learners</p>
+              <p><b>Boys:</b> ${e.boys} | <b>Girls:</b> ${e.girls}</p>
+              <p style="color:var(--text-muted); font-size:0.8rem;">${new Date(e.timestamp).toLocaleString()}</p>
+            </div>`;
+        });
+      }
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function autoFillSchoolCode() {
+      const select = document.getElementById('school_select');
+      const selectedOption = select.options[select.selectedIndex];
+      const code = selectedOption.getAttribute('data-code');
+      if (code) document.getElementById('school_code').value = code;
+    }
+
+    function submitEnrollment(event) {
+      event.preventDefault();
+      
+      const enrollmentData = {
+        school_name: document.getElementById('school_select').value,
+        school_code: document.getElementById('school_code').value,
+        term: document.getElementById('term').value,
+        year: document.getElementById('year').value,
+        total_learners: document.getElementById('total_learners').value,
+        boys: document.getElementById('boys').value,
+        girls: document.getElementById('girls').value,
+        form1: document.getElementById('form1').value,
+        form2: document.getElementById('form2').value,
+        form3: document.getElementById('form3').value,
+        form4: document.getElementById('form4').value
+      };
+
+      saveEnrollmentData(enrollmentData);
+
+      const message = `📊 *ENROLLMENT SUBMISSION*\n\n` +
+        `*School:* ${enrollmentData.school_name}\n` +
+        `*Code:* ${enrollmentData.school_code}\n` +
+        `*Term:* ${enrollmentData.term} ${enrollmentData.year}\n\n` +
+        `*Total Learners:* ${enrollmentData.total_learners}\n` +
+        `*Boys:* ${enrollmentData.boys}\n` +
+        `*Girls:* ${enrollmentData.girls}\n\n` +
+        `*Form 1:* ${enrollmentData.form1}\n` +
+        `*Form 2:* ${enrollmentData.form2}\n` +
+        `*Form 3:* ${enrollmentData.form3}\n` +
+        `*Form 4:* ${enrollmentData.form4}\n\n` +
+        `_Submitted via Zaka District Schools Hub_`;
+
+      const whatsappUrl = `https://wa.me/${DISTRICT_WHATSAPP}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+
+      alert('✅ Enrollment saved! WhatsApp opened - send to District Office.');
+      renderEnrollmentMode();
+    }
+
+    function renderFormsPortal() {
+      const f = content.forms;
+      let html = `<h2>${f.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${f.description}</p>`;
+      const categories = [...new Set(f.availableForms.map(form => form.category))];
+      html += `<div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">`;
+      html += `<button class="btn btn-secondary" onclick="filterForms('all', this)">All</button>`;
+      categories.forEach(cat => {
+        html += `<button class="btn btn-secondary" onclick="filterForms('${cat}', this)">${cat}</button>`;
+      });
+      html += `</div>`;
+
+      f.availableForms.forEach(form => {
+        html += `
+          <div class="card">
+            <h4>${form.name} <span class="badge badge-success">${form.category}</span></h4>
+            <button class="btn btn-secondary" onclick="openForm('${form.id}')">📝 Fill Form</button>
+          </div>`;
+      });
+
+      const submissions = getSubmissions();
+      if (submissions.length > 0) {
+        html += `<div class="sync-queue"><h4>📤 Pending Sync Queue (${submissions.length})</h4>`;
+        submissions.forEach(sub => {
+          const formName = f.availableForms.find(f => f.id === sub.formId)?.name || sub.formId;
+          html += `
+            <div class="sync-item">
+              <div style="flex:1;">
+                <strong>${formName}</strong><br>
+                <small style="color:var(--text-muted);">${new Date(sub.timestamp).toLocaleString()}</small>
+              </div>
+              <div class="sync-item-actions">
+                <button class="btn btn-success" onclick="exportPDF('${sub.id}')">📄 PDF</button>
+                <button class="btn btn-danger" onclick="deleteSubmission('${sub.id}'); renderFormsPortal();">🗑️</button>
+              </div>
+            </div>`;
+        });
+        html += `</div>`;
+      }
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function filterForms(category, button) {
+      const f = content.forms;
+      const container = document.getElementById('app');
+      const cards = container.querySelectorAll('.card');
+      cards.forEach(card => {
+        const formName = card.querySelector('h4').textContent;
+        card.style.display = (category === 'all' || formName.includes(category)) ? 'block' : 'none';
+      });
+      document.querySelectorAll('.btn-secondary').forEach(btn => { btn.style.backgroundColor = '#edf2f7'; btn.style.color = 'var(--text)'; });
+      button.style.backgroundColor = 'var(--primary)';
+      button.style.color = 'white';
+    }
+
+    function openForm(formId) {
+      const form = content.forms.availableForms.find(f => f.id === formId);
+      if (!form) return;
+      let html = `<h2>${form.name}</h2><button class="btn btn-secondary" style="margin-bottom:12px;" onclick="renderFormsPortal()">← Back</button><form id="dynamicForm" onsubmit="handleFormSubmit(event, '${formId}')">`;
+      form.fields.forEach(field => {
+        html += `<label>${field.label}</label>`;
+        if (field.type === 'textarea') html += `<textarea id="${field.id}" required></textarea>`;
+        else if (field.type === 'select') {
+          html += `<select id="${field.id}" required><option value="">Select...</option>`;
+          field.options.forEach(opt => html += `<option value="${opt}">${opt}</option>`);
+          html += `</select>`;
+        } else html += `<input type="${field.type}" id="${field.id}" required>`;
+      });
+      html += `<button type="submit" class="btn">💾 Save Offline</button></form>`;
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function handleFormSubmit(event, formId) {
+      event.preventDefault();
+      const form = content.forms.availableForms.find(f => f.id === formId);
+      const formData = {};
+      form.fields.forEach(field => { formData[field.label] = document.getElementById(field.id).value; });
+      saveSubmission(formId, formData);
+      alert('✅ Form saved offline!');
+      renderFormsPortal();
+    }
+
+    async function exportPDF(submissionId) {
+      const submissions = getSubmissions();
+      const submission = submissions.find(s => s.id === submissionId);
+      if (!submission) return;
+      const form = content.forms.availableForms.find(f => f.id === submission.formId);
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFillColor(15, 61, 46);
+      doc.rect(0, 0, 210, 40, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(16);
+      doc.text('ZAKA DISTRICT SCHOOLS HUB', 105, 15, { align: 'center' });
+      doc.setFontSize(12);
+      doc.text(`Form: ${form.name}`, 105, 25, { align: 'center' });
+      doc.text(`Submitted: ${new Date(submission.timestamp).toLocaleString()}`, 105, 33, { align: 'center' });
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(11);
+      let y = 60;
+      Object.entries(submission.formData).forEach(([label, value]) => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        doc.setFont(undefined, 'bold');
+        doc.text(`${label}:`, 20, y);
+        doc.setFont(undefined, 'normal');
+        const valueLines = doc.splitTextToSize(String(value), 170);
+        doc.text(valueLines, 20, y + 5);
+        y += 5 + (valueLines.length * 5);
+      });
+      doc.setFontSize(9);
+      doc.setTextColor(128, 128, 128);
+      doc.text('Generated offline via Zaka District Schools AI Hub', 105, 290, { align: 'center' });
+      doc.save(`${form.name.replace(/s+/g, '_')}_${submissionId}.pdf`);
+    }
+
+    function renderNotices() {
+      const n = content.notices;
+      let html = `<h2>${n.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${n.description}</p>`;
+      n.items.forEach(item => {
+        const priorityClass = item.priority === 'High' ? 'badge-high' : 'badge-success';
+        html += `
+          <div class="card">
+            <h4>${item.subject} <span class="badge ${priorityClass}">${item.priority}</span></h4>
+            <p><b>From:</b> ${item.from} | <b>Date:</b> ${item.date}</p>
+            <p>${item.summary}</p>
+          </div>`;
+      });
+      document.getElementById('app').innerHTML = html;
+    }
+
+    // Default landing view
+    document.querySelector('nav button').classList.add('active');
+    renderTeacherMode();
+    updateOfflineIndicator();
+  </script>
 </body>
 </html>

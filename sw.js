@@ -1,17 +1,19 @@
-const CACHE = 'zaka-ai-hub-v1';
+const CACHE = 'zaka-hub-v5';
 const ASSETS = [
   './',
   './index.html',
-  './content.js',
-  './app.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
-  './icons/icon-512.png'
+  './icons/icon-512.png',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
 ];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE)
+      .then(cache => cache.addAll(ASSETS))
+      .catch(() => {}) // don't fail install if the CDN is unreachable at install time
+      .then(() => self.skipWaiting())
   );
 });
 
