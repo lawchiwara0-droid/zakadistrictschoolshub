@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#2F4538" />
+<title>Zaka District Schools AI Hub</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<style>
+  :root{
+    --chalkboard: #2F4538;
+    --chalkboard-dark: #24362B;
+    --paper: #F2EBD9;
+    --paper-line: #E3D8BC;
+    --ink: #2E2A22;
+    --ink-soft: #5B5240;
+    --red-pen: #A63A2E;
+    --red-pen-soft: #C97B72;
+    --chalk: #F5F1E6;
+    --gold: #B8862F;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--chalkboard-dark);
+    color:var(--ink);
+    font-family:-apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior:none;
+  }
+  h1,h2,h3,.serif{
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    font-weight:600;
+    color:var(--ink);
+  }
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--paper);
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    background:var(--chalkboard);
+    color:var(--chalk);
+    padding:22px 20px 20px;
+    flex-shrink:0;
+  }
+  header .eyebrow{
+    font-size:12px;
+    letter-spacing:0.02em;
+    color:#B9C9BC;
+    margin-bottom:4px;
+  }
+  header h1{
+    color:var(--chalk);
+    font-size:22px;
+    line-height:1.25;
+    margin:0 0 8px 0;
+  }
+  header .chalk-rule{
+    width:64px;
+    height:3px;
+    background:var(--chalk);
+    border-radius:2px;
+    opacity:0.55;
+    margin-bottom:2px;
+  }
+  header .back-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  header .back-btn{
+    background:none;
+    border:1px solid rgba(245,241,230,0.4);
+    color:var(--chalk);
+    border-radius:8px;
+    padding:5px 10px;
+    font-size:13px;
+    cursor:pointer;
+  }
+  header .back-btn:active{ background: rgba(245,241,230,0.12); }
+
+  /* ---------- Content ---------- */
+  main{
+    flex:1;
+    overflow-y:auto;
+    padding:18px 20px 90px;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        transparent 0px, transparent 27px,
+        var(--paper-line) 28px
+      );
+    background-attachment:local;
+  }
+  main::before{ content:none; }
+  .margin-rule{
+    position:absolute;
+    top:0; bottom:0; left:44px;
+    width:1px;
+    background:var(--red-pen-soft);
+    opacity:0.35;
+    pointer-events:none;
+  }
+
+  section{ display:none; animation:fade .18s ease; }
+  section.active{ display:block; }
+  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+
+  p{ line-height:1.55; color:var(--ink-soft); margin:0 0 10px; white-space:pre-line; }
+
+  /* ---------- Home ---------- */
+  .hero-board{
+    background:var(--chalkboard);
+    border-radius:14px;
+    padding:22px;
+    color:var(--chalk);
+    margin-bottom:20px;
+  }
+  .hero-board .stat{
+    font-family: Georgia, serif;
+    font-size:44px;
+    line-height:1;
+    margin-bottom:6px;
+    transform:rotate(-1deg);
+  }
+  .hero-board .stat-label{
+    font-size:13px;
+    color:#C9D6CC;
+    margin-bottom:14px;
+  }
+  .hero-board h2{
+    color:var(--chalk);
+    font-size:19px;
+    margin:0 0 8px;
+  }
+  .hero-board p{ color:#DCE6DD; font-size:14px; margin-bottom:0; }
+
+  .quick-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .quick-card{
+    background:#fff;
+    border:1px solid var(--paper-line);
+    border-radius:10px;
+    padding:14px;
+    cursor:pointer;
+    text-align:left;
+  }
+  .quick-card:active{ background:#FBF8F0; }
+  .quick-card .k-title{ font-weight:600; font-size:14px; margin-bottom:3px; }
+  .quick-card .k-sub{ font-size:12px; color:var(--ink-soft); }
+
+  .section-label{
+    font-size:12px;
+    text-transform:none;
+    color:var(--gold);
+    font-weight:700;
+    margin:0 0 10px;
+    border-left:3px solid var(--gold);
+    padding-left:8px;
+  }
+
+  /* ---------- Lists (guide / modules) ---------- */
+  .card-list{ display:flex; flex-direction:column; gap:10px; }
+  .list-card{
+    background:#fff;
+    border:1px solid var(--paper-line);
+    border-radius:10px;
+    padding:14px 16px;
+    cursor:pointer;
+  }
+  .list-card:active{ background:#FBF8F0; }
+  .list-card .lc-title{ font-weight:600; font-size:15px; margin-bottom:3px; }
+  .list-card .lc-sub{ font-size:13px; color:var(--ink-soft); }
+  .list-card .lc-arrow{ float:right; color:var(--red-pen); font-size:16px; }
+
+  .accordion-item{
+    background:#fff;
+    border:1px solid var(--paper-line);
+    border-radius:10px;
+    margin-bottom:10px;
+    overflow:hidden;
+  }
+  .accordion-head{
+    padding:13px 16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+    font-weight:600;
+    font-size:14.5px;
+  }
+  .accordion-head .plus{ color:var(--red-pen); font-size:18px; font-weight:400; }
+  .accordion-body{
+    display:none;
+    padding:0 16px 15px;
+  }
+  .accordion-item.open .accordion-body{ display:block; }
+
+  .step-card{
+    background:#fff;
+    border:1px solid var(--paper-line);
+    border-left:4px solid var(--chalkboard);
+    border-radius:8px;
+    padding:14px 16px;
+    margin-bottom:12px;
+  }
+  .step-card h3{ font-size:15px; margin:0 0 6px; }
+  .prompt-chip{
+    display:inline-block;
+    background:var(--chalkboard);
+    color:var(--chalk);
+    font-size:11.5px;
+    padding:3px 9px;
+    border-radius:20px;
+    margin:2px 4px 0 0;
+    cursor:pointer;
+  }
+
+  /* ---------- Prompt Studio ---------- */
+  .cat-tabs{ display:flex; gap:8px; margin-bottom:14px; }
+  .cat-tab{
+    border:1px solid var(--chalkboard);
+    color:var(--chalkboard);
+    background:transparent;
+    padding:6px 14px;
+    border-radius:20px;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .cat-tab.active{ background:var(--chalkboard); color:var(--chalk); }
+
+  .prompt-card{
+    background:#fff;
+    border:1px solid var(--paper-line);
+    border-radius:10px;
+    padding:15px 16px;
+    margin-bottom:14px;
+  }
+  .prompt-card .pc-code{
+    display:inline-block;
+    font-family:Georgia, serif;
+    font-weight:700;
+    color:var(--red-pen);
+    font-size:13px;
+    border:1px solid var(--red-pen-soft);
+    border-radius:6px;
+    padding:1px 7px;
+    margin-bottom:6px;
+  }
+  .prompt-card h3{ font-size:15px; margin:0 0 8px; }
+  .version-toggle{
+    display:flex;
+    gap:6px;
+    margin-bottom:10px;
+  }
+  .v-btn{
+    flex:1;
+    border:1px solid var(--paper-line);
+    background:#FAF7EF;
+    padding:6px 0;
+    font-size:12.5px;
+    border-radius:7px;
+    cursor:pointer;
+    color:var(--ink-soft);
+  }
+  .v-btn.active{ background:var(--chalkboard); color:var(--chalk); border-color:var(--chalkboard); }
+  .prompt-text{
+    background:#FAF7EF;
+    border:1px dashed var(--paper-line);
+    border-radius:8px;
+    padding:11px 12px;
+    font-size:13px;
+    line-height:1.5;
+    color:var(--ink);
+    margin-bottom:10px;
+    max-height:170px;
+    overflow-y:auto;
+  }
+  .btn-row{ display:flex; gap:8px; }
+  .btn{
+    flex:1;
+    border:none;
+    border-radius:8px;
+    padding:9px 0;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .btn-copy{ background:var(--chalkboard); color:var(--chalk); }
+  .btn-copy:active{ background:var(--chalkboard-dark); }
+  .btn-wa{ background:#2E7D5B; color:#fff; }
+  .btn-wa:active{ opacity:0.85; }
+  .btn.copied{ background:var(--gold) !important; }
+
+  /* ---------- Samples ---------- */
+  .sample-card{
+    background:#fff;
+    border:1px solid var(--paper-line);
+    border-radius:10px;
+    padding:15px 16px;
+    margin-bottom:14px;
+  }
+  .sample-card h3{ font-size:14.5px; margin:0 0 3px; }
+  .sample-meta{ font-size:12px; color:var(--gold); margin-bottom:9px; }
+
+  /* ---------- Pilot ---------- */
+  .feedback-q{
+    display:flex;
+    gap:10px;
+    padding:11px 0;
+    border-bottom:1px solid var(--paper-line);
+  }
+  .feedback-q:last-child{ border-bottom:none; }
+  .feedback-q .qn{
+    font-family:Georgia, serif;
+    color:var(--red-pen);
+    font-weight:700;
+    font-size:14px;
+  }
+  .feedback-q p{ margin:0; font-size:13.5px; color:var(--ink); }
+
+  .timeline-card{
+    background:#fff;
+    border:1px solid var(--paper-line);
+    border-left:4px solid var(--gold);
+    border-radius:8px;
+    padding:14px 16px;
+    margin-bottom:12px;
+  }
+  .timeline-card .tc-week{ font-weight:700; font-size:13px; color:var(--gold); margin-bottom:2px; }
+  .timeline-card h3{ font-size:14.5px; margin:0 0 8px; }
+  .tc-row{ font-size:13px; margin-bottom:5px; color:var(--ink-soft); }
+  .tc-row b{ color:var(--ink); }
+
+  /* ---------- Bottom nav ---------- */
+  nav.tabbar{
+    position:sticky;
+    bottom:0;
+    display:flex;
+    background:var(--chalkboard);
+    padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+    flex-shrink:0;
+  }
+  nav.tabbar button{
+    flex:1;
+    background:none;
+    border:none;
+    color:#9EB2A3;
+    font-size:11px;
+    padding:6px 2px 2px;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+  }
+  nav.tabbar button.active{ color:var(--chalk); }
+  nav.tabbar .dot{
+    width:6px; height:6px; border-radius:50%;
+    background:currentColor;
+    opacity:0;
+  }
+  nav.tabbar button.active .dot{ opacity:1; background:var(--red-pen); }
+
+  ::-webkit-scrollbar{ width:0; height:0; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header id="app-header">
+    <div class="back-row" id="back-row" style="display:none;">
+      <button class="back-btn" id="back-btn">← Back</button>
+    </div>
+    <div class="eyebrow" id="header-eyebrow">Zaka District Schools</div>
+    <h1 id="header-title">AI Hub</h1>
+    <div class="chalk-rule"></div>
+  </header>
+
+  <main id="main">
+    <section id="view-home" class="active"></section>
+    <section id="view-guide"></section>
+    <section id="view-modules"></section>
+    <section id="view-prompts"></section>
+    <section id="view-samples"></section>
+    <section id="view-pilot"></section>
+  </main>
+
+  <nav class="tabbar">
+    <button data-tab="home" class="active"><span>⌂</span><span class="dot"></span>Home</button>
+    <button data-tab="guide"><span>▤</span><span class="dot"></span>Guide</button>
+    <button data-tab="modules"><span>▥</span><span class="dot"></span>Modules</button>
+    <button data-tab="prompts"><span>✎</span><span class="dot"></span>Prompts</button>
+    <button data-tab="pilot"><span>◷</span><span class="dot"></span>Pilot</button>
+  </nav>
+</div>
+
+<script src="content.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
