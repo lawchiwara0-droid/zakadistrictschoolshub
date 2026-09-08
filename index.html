@@ -136,6 +136,38 @@
             { label: "District", type: "select", options: ["Zaka", "Chiredzi", "Masvingo", "Gutu", "Mwenezi"], id: "district" },
             { label: "Term", type: "select", options: ["Term 1", "Term 2", "Term 3"], id: "term" },
             { label: "Year", type: "number", id: "year" },
+        { id: "building", name: "Building & Construction", code: "4060" },
+        { id: "woodwork", name: "Woodwork", code: "4061" },
+        { id: "metalwork", name: "Metalwork", code: "4062" },
+        { id: "food_nutrition", name: "Food & Nutrition", code: "4064" },
+        { id: "computer_science", name: "Computer Science", code: "4021" }
+      ],
+      teacher: {
+        title: "Teacher AI Copilot",
+        description: "WhatsApp-ready ZIMSEC syllabus prompt builders for all subjects.",
+        prompts: [
+          { name: "Scheme of Work Generator", text: "Create a Form 3 English Language Scheme of Work for Term 1 based on the current ZIMSEC syllabus focusing on Descriptive Compositions." },
+          { name: "Daily Lesson Plan Builder", text: "Generate a 45-minute lesson plan for Form 1 Comprehension: Skimming and Scanning techniques, including interactive blackboard exercises." },
+          { name: "Mathematics Problem Set", text: "Generate 10 Form 2 Mathematics problems on Algebraic Expressions with step-by-step solutions aligned to ZIMSEC 4008." }
+        ]
+      },
+      learner: {
+        title: "Learner Portal",
+        description: "Offline Notes and Practice Tasks for Forms 1-4 (All ZIMSEC Subjects)",
+        forms: {
+          1: { topics: [{ subject: "English", name: "Comprehension", notes: "Identify the main idea, observe tone, and capture contextual meaning.", practice: "Read Chapter 1 text and answer the 5 structured evaluation questions." }] }
+        }
+      },
+      forms: {
+        title: "Administrative & RBM Forms",
+        description: "Fill and store school operational records, RBM appraisals, and narrative reports completely offline.",
+        availableForms: [
+          { id: "annex_a", name: "Annex A - Termly School Returns", category: "School Returns", schoolType: "secondary", fields: [
+            { label: "School Name", type: "text", id: "school_name" },
+            { label: "School Code (EMIS)", type: "text", id: "school_code" },
+            { label: "District", type: "select", options: ["Zaka", "Chiredzi", "Masvingo", "Gutu", "Mwenezi"], id: "district" },
+            { label: "Term", type: "select", options: ["Term 1", "Term 2", "Term 3"], id: "term" },
+            { label: "Year", type: "number", id: "year" },
 <!DOCTYPE html>
 <html lang="en">
 <head>
