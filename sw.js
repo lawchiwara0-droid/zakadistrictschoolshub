@@ -1,4 +1,4 @@
-const CACHE = 'zaka-hub-v5';
+const CACHE = 'zaka-hub-v6'; // Incremented version to clear old broken asset memory
 const ASSETS = [
   './',
   './index.html',
@@ -12,7 +12,7 @@ self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE)
       .then(cache => cache.addAll(ASSETS))
-      .catch(() => {}) // don't fail install if the CDN is unreachable at install time
+      .catch(() => {}) 
       .then(() => self.skipWaiting())
   );
 });
