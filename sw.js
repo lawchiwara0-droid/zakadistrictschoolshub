@@ -1,18 +1,18 @@
-const CACHE = 'zaka-hub-v6'; // Incremented version to clear old broken asset memory
+const CACHE = 'zaka-hub-v5';
 const ASSETS = [
   './',
   './index.html',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
-  'https://cloudflare.com'
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
 ];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE)
       .then(cache => cache.addAll(ASSETS))
-      .catch(() => {}) 
+      .catch(() => {}) // don't fail install if the CDN is unreachable at install time
       .then(() => self.skipWaiting())
   );
 });
