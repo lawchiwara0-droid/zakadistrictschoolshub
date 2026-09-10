@@ -1,4 +1,4 @@
-const CACHE = 'zaka-hub-v5-1';
+const CACHE = 'zaka-hub-v5-2';
 const ASSETS = [
   './',
   './index.html',
