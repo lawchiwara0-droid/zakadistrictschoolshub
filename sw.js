@@ -1,11 +1,10 @@
-const CACHE = 'zaka-hub-v5-4';
+const CACHE = 'zaka-hub-v5-6';
 const ASSETS = [
   './',
   './index.html',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
-  './zimsec_olevel_timetable_nov2026.pdf',
   './zimsec_alevel_timetable_nov2026.pdf',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
 ];
@@ -28,3 +27,13 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      return cached || fetch(e.request).then(res => {
+        const copy = res.clone();
+        caches.open(CACHE).then(cache => cache.put(e.request, copy));
+        return res;
+      }).catch(() => cached);
+    })
+  );
+});

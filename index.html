@@ -341,7 +341,7 @@
 
   <div id="offlineIndicator" class="offline-indicator">📶 Offline Mode</div>
 
-  <header>
+  <header onclick="goHome()" style="cursor:pointer;" title="Tap to go Home">
     <div style="display:flex; align-items:center; justify-content:center; gap:14px; max-width:600px; margin:0 auto;">
       <img src="icon-192.png" alt="Zaka District Schools Hub crest" style="width:60px; height:60px; flex-shrink:0;">
       <div style="text-align:left;">
@@ -829,10 +829,160 @@
       return data ? JSON.parse(data) : [];
     }
 
+    // ROLE — on-device convenience only. Not real security: anyone can change it, and it never
+    // restricts what data exists on the device, only what's shown to make navigation simpler.
+    const ROLE_KEY = 'zaka_user_role';
+    function getUserRole() {
+      return localStorage.getItem(ROLE_KEY) || '';
+    }
+    function setUserRole(role) {
+      localStorage.setItem(ROLE_KEY, role);
+      renderHome();
+    }
+
     function setActiveNav(button, renderFunc) {
       document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
       button.classList.add('active');
       renderFunc();
+    }
+
+    function goHome() {
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      renderHome();
+    }
+
+    function renderHome() {
+      const role = getUserRole();
+      const roleLabel = role ? role.charAt(0).toUpperCase() + role.slice(1) : '';
+
+      let html = `<h2>👋 Welcome${roleLabel ? ', ' + roleLabel : ''}</h2>`;
+      html += `<p style="color:var(--text-muted); margin-bottom:12px;">Zaka District Schools Hub — works fully offline. Connect only when you need to send something via WhatsApp or download a new file.</p>`;
+
+      html += `<div class="card">
+        <h4>Who's using this device right now?</h4>
+        <p style="margin-bottom:10px;">This just personalises what's shown — it doesn't lock anything.</p>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn ${role === 'teacher' ? '' : 'btn-secondary'}" onclick="setUserRole('teacher')">👩🏾‍🏫 Teacher</button>
+          <button class="btn ${role === 'learner' ? '' : 'btn-secondary'}" onclick="setUserRole('learner')">🎓 Learner</button>
+          <button class="btn ${role === 'admin' ? '' : 'btn-secondary'}" onclick="setUserRole('admin')">🗂️ Administrator</button>
+        </div>
+      </div>`;
+
+      html += `<h3>Quick Links</h3>`;
+      const links = [
+        { icon: '📝', label: 'Teacher AI Copilot', fn: 'renderTeacherMode' },
+        { icon: '📖', label: 'Learner Portal', fn: 'renderLearnerMode' },
+        { icon: '📊', label: 'Enrollment', fn: 'renderEnrollmentMode' },
+        { icon: '📋', label: 'Forms', fn: 'renderFormsPortal' },
+        { icon: '📝', label: 'Examinations', fn: 'renderExaminations' },
+        { icon: '🔔', label: 'Notices', fn: 'renderNotices' }
+      ];
+      links.forEach(l => {
+        html += `<div class="card" style="cursor:pointer;" onclick="${l.fn}()"><h4>${l.icon} ${l.label}</h4></div>`;
+      });
+
+      if (role === 'admin') {
+        html += `<h3>Administration</h3>`;
+        html += `<div class="card" style="cursor:pointer; border-left:4px solid var(--secondary);" onclick="renderAdminDashboard()">
+          <h4>🗂️ Admin Dashboard</h4>
+          <p style="margin-bottom:0;">Everything saved on this device, sorted into folders — enrollment submissions, form submissions, and exam confirmations.</p>
+        </div>`;
+      }
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function renderAdminDashboard() {
+      const enrollments = getEnrollmentData();
+      const submissions = getSubmissions();
+      const examConfirmed = getExamConfirmations();
+
+      const categories = {};
+      content.forms.availableForms.forEach(f => { categories[f.category] = categories[f.category] || []; });
+      submissions.forEach(sub => {
+        const form = content.forms.availableForms.find(f => f.id === sub.formId);
+        const cat = form ? form.category : 'Other';
+        categories[cat] = categories[cat] || [];
+        categories[cat].push(sub);
+      });
+
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="goHome()">← Back to Home</button>`;
+      html += `<h2>🗂️ Admin Dashboard</h2>`;
+      html += `<p style="color:var(--text-muted); margin-bottom:12px;">Everything saved on <b>this device only</b> — not synced from other phones or schools. Sorted into folders for easier browsing.</p>`;
+
+      html += `<div class="card" style="cursor:pointer;" onclick="renderAdminFolder('enrollment')">
+        <h4>📊 Enrollment Submissions <span class="badge badge-success">${enrollments.length}</span></h4>
+        <p style="margin-bottom:0;">All enrollment statistics submitted from this device.</p>
+      </div>`;
+
+      Object.keys(categories).forEach(cat => {
+        html += `<div class="card" style="cursor:pointer;" onclick="renderAdminFolder('forms', '${cat.replace(/'/g, "\\'")}')">
+          <h4>📋 ${cat} Forms <span class="badge badge-success">${categories[cat].length}</span></h4>
+          <p style="margin-bottom:0;">Saved ${cat.toLowerCase()} submissions on this device.</p>
+        </div>`;
+      });
+
+      html += `<div class="card" style="cursor:pointer;" onclick="renderAdminFolder('exams')">
+        <h4>📝 Exam Confirmations <span class="badge badge-success">${examConfirmed.length}</span></h4>
+        <p style="margin-bottom:0;">District Examination papers confirmed as received.</p>
+      </div>`;
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function renderAdminFolder(type, category) {
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="renderAdminDashboard()">← Back to Admin Dashboard</button>`;
+
+      if (type === 'enrollment') {
+        const enrollments = getEnrollmentData();
+        html += `<h2>📊 Enrollment Submissions</h2>`;
+        html += `<p style="color:var(--text-muted); margin-bottom:12px;">${enrollments.length} saved on this device.</p>`;
+        if (!enrollments.length) html += `<div class="card"><p style="margin:0;">No enrollment submissions saved on this device yet.</p></div>`;
+        enrollments.slice().reverse().forEach(e => {
+          html += `
+            <div class="card">
+              <h4>${e.school_name}</h4>
+              <p><b>Term:</b> ${e.term} ${e.year} | <b>Total:</b> ${e.total_learners} learners</p>
+              <p><b>Boys:</b> ${e.boys} | <b>Girls:</b> ${e.girls}</p>
+              <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:0;">${new Date(e.timestamp).toLocaleString()}</p>
+            </div>`;
+        });
+      }
+
+      if (type === 'forms') {
+        const submissions = getSubmissions().filter(sub => {
+          const form = content.forms.availableForms.find(f => f.id === sub.formId);
+          return (form ? form.category : 'Other') === category;
+        });
+        html += `<h2>📋 ${category} Forms</h2>`;
+        html += `<p style="color:var(--text-muted); margin-bottom:12px;">${submissions.length} saved on this device.</p>`;
+        if (!submissions.length) html += `<div class="card"><p style="margin:0;">No ${category.toLowerCase()} submissions saved on this device yet.</p></div>`;
+        submissions.slice().reverse().forEach(sub => {
+          const form = content.forms.availableForms.find(f => f.id === sub.formId);
+          html += `
+            <div class="sync-item">
+              <div style="flex:1;">
+                <strong>${form ? form.name : sub.formId}</strong><br>
+                <small style="color:var(--text-muted);">${new Date(sub.timestamp).toLocaleString()}</small>
+              </div>
+              <div class="sync-item-actions">
+                <button class="btn btn-success" onclick="exportPDF('${sub.id}')">⬇️ PDF</button>
+              </div>
+            </div>`;
+        });
+      }
+
+      if (type === 'exams') {
+        const confirmed = getExamConfirmations();
+        html += `<h2>📝 Exam Confirmations</h2>`;
+        html += `<p style="color:var(--text-muted); margin-bottom:12px;">${confirmed.length} paper(s) confirmed received on this device.</p>`;
+        if (!confirmed.length) html += `<div class="card"><p style="margin:0;">No exam papers confirmed on this device yet.</p></div>`;
+        content.examinations.papers.filter(p => confirmed.includes(p.id)).forEach(p => {
+          html += `<div class="card"><h4>${p.subject} <span class="badge badge-success">${p.form}</span></h4><p style="margin-bottom:0;">${p.term} ${p.year} — confirmed received</p></div>`;
+        });
+      }
+
+      document.getElementById('app').innerHTML = html;
     }
 
     function renderTeacherMode() {
@@ -1000,6 +1150,9 @@
     function renderFormsPortal() {
       const f = content.forms;
       let html = `<h2>${f.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${f.description}</p>`;
+      html += `<div class="card" style="background:#fffaf0; border-color:#f6ad55;">
+        <p style="margin-bottom:0; font-size:0.85rem;"><b>How saving works:</b> filling a form and tapping "Save to This Device" stores it only on this phone — it stays here even after closing the app, and nothing is sent anywhere automatically. When you're ready to actually send it, open it below and tap Download PDF (to share the file yourself) or use WhatsApp where that option is offered.</p>
+      </div>`;
       const categories = [...new Set(f.availableForms.map(form => form.category))];
       html += `<div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">`;
       html += `<button class="btn btn-secondary" onclick="filterForms('all', this)">All</button>`;
@@ -1018,17 +1171,18 @@
 
       const submissions = getSubmissions();
       if (submissions.length > 0) {
-        html += `<div class="sync-queue"><h4>📤 Pending Sync Queue (${submissions.length})</h4>`;
+        html += `<div class="sync-queue"><h4>💾 Saved on This Device (${submissions.length})</h4>
+          <p style="font-size:0.8rem; color:#c05621; margin-bottom:10px;">These are drafts/completed forms stored locally. They will NOT reach the District Office on their own — download and share each one yourself.</p>`;
         submissions.forEach(sub => {
           const formName = f.availableForms.find(f => f.id === sub.formId)?.name || sub.formId;
           html += `
             <div class="sync-item">
               <div style="flex:1;">
                 <strong>${formName}</strong><br>
-                <small style="color:var(--text-muted);">${new Date(sub.timestamp).toLocaleString()}</small>
+                <small style="color:var(--text-muted);">Saved ${new Date(sub.timestamp).toLocaleString()}</small>
               </div>
               <div class="sync-item-actions">
-                <button class="btn btn-success" onclick="exportPDF('${sub.id}')">📄 PDF</button>
+                <button class="btn btn-success" onclick="exportPDF('${sub.id}')">⬇️ Download PDF</button>
                 <button class="btn btn-danger" onclick="deleteSubmission('${sub.id}'); renderFormsPortal();">🗑️</button>
               </div>
             </div>`;
@@ -1064,7 +1218,7 @@
           html += `</select>`;
         } else html += `<input type="${field.type}" id="${field.id}" required>`;
       });
-      html += `<button type="submit" class="btn">💾 Save Offline</button></form>`;
+      html += `<button type="submit" class="btn">💾 Save to This Device</button></form>`;
       document.getElementById('app').innerHTML = html;
     }
 
@@ -1074,7 +1228,7 @@
       const formData = {};
       form.fields.forEach(field => { formData[field.label] = document.getElementById(field.id).value; });
       saveSubmission(formId, formData);
-      alert('✅ Form saved offline!');
+      alert('✅ Saved to this device. It will stay here — even after closing the app — until you download it or delete it. Nothing is sent automatically; find it under "Saved on This Device" below to download or share it.');
       renderFormsPortal();
     }
 
@@ -1124,7 +1278,7 @@
             <h4>${paper.subject} <span class="badge badge-success">${paper.form}</span></h4>
             <p><b>${paper.term} ${paper.year}</b></p>
             <div class="btn-row" style="display:flex; gap:8px;">
-              <a href="${paper.file}" download style="flex:1;"><button class="btn" style="width:100%;">📄 Download Paper</button></a>
+              <a href="${paper.file}" download style="flex:1;"><button class="btn" style="width:100%;">⬇️ Download Paper</button></a>
             </div>
             <button class="btn ${isConfirmed ? 'btn-success' : 'btn-whatsapp'}" style="width:100%; margin-top:8px;" onclick="confirmExamReceived('${paper.id}', '${paper.form}', '${paper.subject}', '${paper.term}', '${paper.year}')">
               ${isConfirmed ? '✅ Confirmed Received' : '💬 Confirm Received via WhatsApp'}
@@ -1165,15 +1319,14 @@
             <h4>${item.subject} <span class="badge ${priorityClass}">${item.priority}</span></h4>
             <p><b>From:</b> ${item.from} | <b>Date:</b> ${item.date}</p>
             <p>${item.summary}</p>
-            ${item.file ? `<a href="${item.file}" download><button class="btn" style="width:100%;">📄 Download Full Document</button></a>` : ''}
+            ${item.file ? `<a href="${item.file}" download><button class="btn" style="width:100%;">⬇️ Download Full Document</button></a>` : ''}
           </div>`;
       });
       document.getElementById('app').innerHTML = html;
     }
 
-    // Default landing view
-    document.querySelector('nav button').classList.add('active');
-    renderTeacherMode();
+    // Default landing view — a Welcome/Home screen, per feedback, instead of jumping straight into Teacher
+    renderHome();
     updateOfflineIndicator();
   </script>
 </body>
