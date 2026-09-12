@@ -23,7 +23,88 @@
     }
 
     * {
-      box-sizing: border-box;    }
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), #1a5c47);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 4px solid var(--secondary);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      letter-spacing: 0.5px;
+    }
+
+    header p {
+      font-size: 0.9rem;
+      color: #cbd5e0;
+      margin-top: 4px;
+    }
+
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+      z-index: 1000;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    nav button {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: 12px 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    nav button.active {
+      color: var(--primary);
+      background-color: #f0f7f4;
+      border-top: 3px solid var(--primary);
+      padding-top: 9px;
+    }
+
+    #app {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 0 16px;
+    }
+
+    h2 {
+      font-size: 1.3rem;
+      color: var(--primary);
+      margin-bottom: 12px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 4px;
+    }
 
     h3 {
       font-size: 1.1rem;
@@ -645,6 +726,34 @@
             { label: "Infrastructure & Resources", type: "textarea", id: "infrastructure" },
             { label: "Major Challenges", type: "textarea", id: "challenges" },
             { label: "Support Needed from District", type: "textarea", id: "support_needed" }
+          ]},
+          { id: "results_analysis", name: "ZIMSEC Results Analysis (Post-Results)", category: "Academic", fields: [
+            { label: "School Name", type: "text", id: "ra_school_name" },
+            { label: "Centre Number", type: "text", id: "ra_centre_no" },
+            { label: "Examination Level", type: "select", options: ["O-Level", "A-Level"], id: "ra_level" },
+            { label: "Examination Session", type: "select", options: ["June", "November"], id: "ra_session" },
+            { label: "Examination Year", type: "number", id: "ra_year" },
+            { label: "Subject", type: "text", id: "ra_subject" },
+            { label: "Subject Code", type: "text", id: "ra_subject_code" },
+            { label: "Subject Teacher(s)", type: "text", id: "ra_teacher" },
+            { label: "Head of Department", type: "text", id: "ra_hod" },
+            { label: "Number Registered", type: "number", id: "ra_registered" },
+            { label: "Number Who Sat", type: "number", id: "ra_sat" },
+            { label: "Number Absent", type: "number", id: "ra_absent" },
+            { label: "Grade A", type: "number", id: "ra_grade_a" },
+            { label: "Grade B", type: "number", id: "ra_grade_b" },
+            { label: "Grade C", type: "number", id: "ra_grade_c" },
+            { label: "Grade D", type: "number", id: "ra_grade_d" },
+            { label: "Grade E", type: "number", id: "ra_grade_e" },
+            { label: "Grade U / Ungraded", type: "number", id: "ra_grade_u" },
+            { label: "A-C Pass Rate (%)", type: "number", id: "ra_pass_rate" },
+            { label: "Previous Session A-C Pass Rate (%)", type: "number", id: "ra_prev_pass_rate" },
+            { label: "Main Achievement", type: "textarea", id: "ra_achievement" },
+            { label: "Biggest Concern", type: "textarea", id: "ra_concern" },
+            { label: "Learner Groups Requiring Support", type: "textarea", id: "ra_support_groups" },
+            { label: "Likely Contributing Factors", type: "textarea", id: "ra_factors" },
+            { label: "Improvement Plan (interventions, responsible persons, timeline)", type: "textarea", id: "ra_improvement_plan" },
+            { label: "Date of Analysis", type: "date", id: "ra_date" }
           ]}
         ]
       },
@@ -652,15 +761,16 @@
         title: "District Examinations",
         description: "Official district-set papers, available to every school the moment they're published — no relying on relay chains between schools.",
         papers: [
-          { id: "exam_001", form: "Form 2", subject: "English Language", term: "Term 3", year: "2026", file: "exams/form2_english_term3_2026.pdf" },
-          { id: "exam_002", form: "Form 4", subject: "English Language", term: "Term 3", year: "2026", file: "exams/form4_english_term3_2026.pdf" },
-          { id: "exam_003", form: "Form 2", subject: "Mathematics", term: "Term 3", year: "2026", file: "exams/form2_maths_term3_2026.pdf" }
+          { id: "exam_001", form: "Form 2", subject: "English Language", term: "Term 3", year: "2026", file: "form2_english_term3_2026.pdf" },
+          { id: "exam_002", form: "Form 4", subject: "English Language", term: "Term 3", year: "2026", file: "form4_english_term3_2026.pdf" },
+          { id: "exam_003", form: "Form 2", subject: "Mathematics", term: "Term 3", year: "2026", file: "form2_maths_term3_2026.pdf" }
         ]
       },
       notices: {
         title: "Official District Notices", 
         description: "Directives from District Schools Office, HR, and BSPZ.",
         items: [
+          { id: "notice_zimsec_alevel", date: "2026-05-13", from: "ZIMSEC", subject: "ZGCE Advanced Level Examination Timetable — Nov/Dec 2026 Session", summary: "Full paper-by-paper timetable for the November/December 2026 A-Level examinations. Practical/planning sessions begin 14 September 2026; written papers run from 13 October through 20 November 2026. Results are published within the second week of January 2027 (A-Level) and third week of January 2027 (O-Level). Queries: +263 242 304 119 or WhatsApp 0782 745 768. Malpractice hotlines: 0800 4100 / 0716 800 189 / 0800 4461 / 0773 220 220.", priority: "High", file: "zimsec_alevel_timetable_nov2026.pdf" },
           { id: "notice_000", date: "2026-09-09", from: "District Schools Office", subject: "Term 3 District Examinations Now Available", summary: "Term 3 District Examination papers are now published in the Exams tab. Every school can download directly and confirm receipt — no need to wait on relay from other schools or offices.", priority: "High" },
           { id: "notice_001", date: "2025-09-01", from: "District Schools Office", subject: "Submission Deadline: Term 3 Annex A", summary: "Please ensure all data sets are compiled by 20 September 2025. Offline queues via this portal will automatically sync.", priority: "High" },
           { id: "notice_002", date: "2025-09-05", from: "BSPZ Coordinator", subject: "Form 4 Mock Examination Registration", summary: "All schools must submit Form 4 candidate lists by 15 September 2025. Use the Enrollment Tab to submit.", priority: "High" },
@@ -1055,6 +1165,7 @@
             <h4>${item.subject} <span class="badge ${priorityClass}">${item.priority}</span></h4>
             <p><b>From:</b> ${item.from} | <b>Date:</b> ${item.date}</p>
             <p>${item.summary}</p>
+            ${item.file ? `<a href="${item.file}" download><button class="btn" style="width:100%;">📄 Download Full Document</button></a>` : ''}
           </div>`;
       });
       document.getElementById('app').innerHTML = html;
