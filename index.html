@@ -684,31 +684,37 @@
       const appDiv = document.getElementById('app');
       const nav = document.getElementById('nav');
       
-      // Hide nav
+      // Hide nav completely
       if (nav) nav.style.display = 'none';
       
       let html = `
         <div class="home-container">
-          <div style="text-align:center; margin-bottom:20px;">
-            <h2 style="border:none; margin-bottom:8px;">Welcome to Zaka Hub</h2>
-            <p style="color:var(--text-muted);">Select your role to continue</p>
+          <div style="text-align:center; margin-bottom:40px; padding:20px; background:#f0f7f4; border-radius:12px;">
+            <h2 style="border:none; margin-bottom:8px; font-size:1.5rem;">👋 Welcome Back</h2>
+            <p style="color:var(--text-muted); margin:0; font-size:0.95rem;">Select your role to access the Hub</p>
           </div>
           
-          <button class="role-button" onclick="selectRole('teacher')">
+          <button class="role-button" onclick="selectRole('teacher')" style="margin-bottom:16px;">
             <div class="role-icon">👨‍🏫</div>
-            <div>Teacher</div>
+            <div style="font-size:1rem; font-weight:600;">Teacher</div>
+            <div style="font-size:0.75rem; color:rgba(255,255,255,0.8); margin-top:4px;">Access lesson materials & exam papers</div>
           </button>
           
-          <button class="role-button" onclick="selectRole('learner')">
+          <button class="role-button" onclick="selectRole('learner')" style="margin-bottom:16px;">
             <div class="role-icon">👨‍🎓</div>
-            <div>Learner</div>
+            <div style="font-size:1rem; font-weight:600;">Learner</div>
+            <div style="font-size:0.75rem; color:rgba(255,255,255,0.8); margin-top:4px;">Download papers & revision resources</div>
           </button>
           
           <button class="role-button" onclick="selectRole('administrator')">
             <div class="role-icon">👔</div>
-            <div>Administrator</div>
-            <div style="font-size:0.75rem; margin-top:4px;">(Heads, Inspectors, HODs)</div>
+            <div style="font-size:1rem; font-weight:600;">Administrator</div>
+            <div style="font-size:0.75rem; color:rgba(255,255,255,0.8); margin-top:4px;">Manage enrollment & official forms</div>
           </button>
+          
+          <div style="text-align:center; margin-top:32px; padding-top:16px; border-top:1px solid #e2e8f0;">
+            <p style="color:var(--text-muted); font-size:0.85rem; margin:0;">🔒 Your device PIN is set and protecting sensitive data</p>
+          </div>
         </div>
       `;
       
