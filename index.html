@@ -680,6 +680,13 @@
     }
 
     function renderHome() {
+      // Clear everything first
+      const appDiv = document.getElementById('app');
+      const nav = document.getElementById('nav');
+      
+      // Hide nav
+      if (nav) nav.style.display = 'none';
+      
       let html = `
         <div class="home-container">
           <div style="text-align:center; margin-bottom:20px;">
@@ -704,8 +711,10 @@
           </button>
         </div>
       `;
-      document.getElementById('app').innerHTML = html;
-      document.getElementById('nav').style.display = 'none';
+      
+      if (appDiv) {
+        appDiv.innerHTML = html;
+      }
     }
 
     function selectRole(role) {
@@ -781,10 +790,28 @@
     }
 
     function signOut() {
+      console.log('Sign out triggered');
       currentRole = null;
+      currentPin = null;
       localStorage.removeItem('zaka_user_role');
-      document.getElementById('nav').style.display = 'none';
+      
+      const nav = document.getElementById('nav');
+      if (nav) nav.style.display = 'none';
+      
+      const updateBanner = document.getElementById('updateBanner');
+      if (updateBanner) updateBanner.classList.remove('show');
+      
+      // Clear app content before rendering home
+      const appDiv = document.getElementById('app');
+      if (appDiv) appDiv.innerHTML = '';
+      
+      // Render home page
       renderHome();
+      
+      // Scroll to top for visual feedback
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+      }, 100);
     }
 
     function renderTeacher() {
