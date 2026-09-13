@@ -48,3 +48,21 @@ self.addEventListener('fetch', event => {
     })
   );
 });
+
+// Update detection for client
+self.addEventListener('controllerchange', () => {
+  self.clients.matchAll().then(clients => {
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'UPDATE_AVAILABLE'
+      });
+    });
+  });
+});
+
+// Handle messages from client
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
