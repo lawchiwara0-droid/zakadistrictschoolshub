@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'zaka-hub-v5-1-exam-test';
+const CACHE_VERSION = 'zaka-hub-v6-pin-security';
 const urlsToCache = [
   './',
   './index.html',
