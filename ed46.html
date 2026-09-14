@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ED46 (B1) Secondary School Census — Data Entry Tool</title>
+<style>
+  :root{
+    --navy:#0F2A47;
+    --navy-light:#173A5E;
+    --navy-pale:#EAF0F6;
+    --gold:#C08A2E;
+    --gold-pale:#F4E6C8;
+    --cream:#FAF8F3;
+    --ink:#1C2530;
+    --muted:#5B6774;
+    --line:#DCE1E7;
+    --error:#B03A2E;
+    --error-pale:#FBE9E7;
+    --ok:#2E7D4F;
+    --ok-pale:#E8F5EC;
+    --radius:8px;
+    --font-head:Georgia,'Times New Roman',serif;
+    --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--cream);color:var(--ink);font-family:var(--font-body);}
+  body{display:flex;min-height:100vh;}
+  ::selection{background:var(--gold-pale);}
+
+  /* Sidebar */
+  #sidebar{
+    width:250px;flex:0 0 250px;background:var(--navy);color:#fff;
+    display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;
+  }
+  #sidebar .brand{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.12);}
+  #sidebar .brand .tag{font-family:var(--font-head);font-size:12px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;}
+  #sidebar .brand h1{font-family:var(--font-head);font-size:19px;margin:4px 0 0;line-height:1.25;font-weight:normal;}
+  #sidebar .schoolname{padding:12px 18px;font-size:13px;color:#C9D6E4;border-bottom:1px solid rgba(255,255,255,.12);min-height:18px;}
+  nav#navlist{flex:1;padding:10px 0;}
+  nav#navlist button{
+    display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:none;
+    color:#D6E0EA;padding:10px 18px;font-size:13.5px;cursor:pointer;font-family:var(--font-body);
+    border-left:3px solid transparent;
+  }
+  nav#navlist button:hover{background:rgba(255,255,255,.06);}
+  nav#navlist button.active{background:var(--navy-light);border-left-color:var(--gold);color:#fff;font-weight:600;}
+  nav#navlist .dot{width:8px;height:8px;border-radius:50%;background:#5A6E82;flex:0 0 8px;}
+  nav#navlist .dot.done{background:var(--ok);}
+  nav#navlist .dot.warn{background:var(--gold);}
+  #sidebar .sidebar-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.12);font-size:11px;color:#8FA2B5;}
+
+  /* Main */
+  #main{flex:1;display:flex;flex-direction:column;min-width:0;}
+  #topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:12px 28px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;
+  }
+  #topbar .title{font-family:var(--font-head);font-size:16px;color:var(--navy);}
+  #topbar .actions{display:flex;gap:8px;flex-wrap:wrap;}
+  button.btn{
+    font-family:var(--font-body);font-size:13px;padding:8px 14px;border-radius:6px;border:1px solid var(--line);
+    background:#fff;color:var(--ink);cursor:pointer;font-weight:600;
+  }
+  button.btn:hover{border-color:var(--navy);}
+  button.btn.primary{background:var(--navy);color:#fff;border-color:var(--navy);}
+  button.btn.primary:hover{background:var(--navy-light);}
+  button.btn.gold{background:var(--gold);border-color:var(--gold);color:#fff;}
+  button.btn.gold:hover{filter:brightness(0.95);}
+  button.btn.danger{color:var(--error);border-color:#EEC6C0;}
+  button.btn.danger:hover{background:var(--error-pale);}
+  button.btn.small{padding:5px 10px;font-size:12px;}
+
+  #content{flex:1;padding:26px 32px 60px;max-width:980px;width:100%;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  .panel h2{font-family:var(--font-head);font-size:24px;color:var(--navy);margin:0 0 4px;}
+  .panel .sub{color:var(--muted);font-size:13.5px;margin:0 0 22px;}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-bottom:18px;}
+  .card h3{font-family:var(--font-head);font-size:15px;color:var(--navy);margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line);}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 18px;}
+  .grid.g3{grid-template-columns:repeat(3,1fr);}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field.full{grid-column:1/-1;}
+  .field label{font-size:12.5px;font-weight:600;color:var(--navy-light);}
+  .field .hint{font-size:11px;color:var(--muted);font-weight:400;}
+  .field input[type=text],.field input[type=number],.field input[type=date],.field input[type=email],.field select,.field textarea{
+    font-family:var(--font-body);font-size:13.5px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;
+    background:#fff;color:var(--ink);
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:var(--gold);}
+  .field input.err,.field select.err{border-color:var(--error);background:var(--error-pale);}
+  .radiorow,.checkrow{display:flex;gap:16px;flex-wrap:wrap;align-items:center;padding-top:4px;}
+  .radiorow label,.checkrow label{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;color:var(--ink);}
+
+  table.grid-table{width:100%;border-collapse:collapse;font-size:13px;}
+  table.grid-table th{background:var(--navy-pale);color:var(--navy);text-align:left;padding:8px 8px;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--line);}
+  table.grid-table td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  table.grid-table input,table.grid-table select{width:100%;font-size:13px;padding:6px 7px;border:1px solid var(--line);border-radius:5px;}
+  table.grid-table input.err{border-color:var(--error);background:var(--error-pale);}
+  table.grid-table tfoot td{font-weight:700;background:var(--navy-pale);}
+  .rowdel{background:none;border:none;color:var(--error);cursor:pointer;font-size:16px;line-height:1;padding:4px;}
+  .addrow{margin-top:10px;}
+
+  .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:700;}
+  .badge.ok{background:var(--ok-pale);color:var(--ok);}
+  .badge.warn{background:var(--gold-pale);color:#8A6414;}
+
+  .issue-list{list-style:none;margin:0;padding:0;}
+  .issue-list li{padding:10px 12px;border-radius:6px;background:var(--error-pale);color:var(--error);font-size:13.5px;margin-bottom:8px;display:flex;gap:8px;}
+  .issue-list li .sec{font-weight:700;flex:0 0 auto;}
+  .issue-list.clean li{background:var(--ok-pale);color:var(--ok);}
+
+  .home-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .home-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;cursor:pointer;transition:border-color .15s;}
+  .home-card:hover{border-color:var(--gold);}
+  .home-card .hc-top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .home-card h4{font-family:var(--font-head);margin:0;font-size:15px;color:var(--navy);}
+  .home-card p{margin:6px 0 0;font-size:12.5px;color:var(--muted);}
+
+  .footer-nav{display:flex;justify-content:space-between;margin-top:20px;}
+
+  .review-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:18px;}
+  .review-table th{text-align:left;background:var(--navy-pale);padding:7px 10px;color:var(--navy);font-size:11.5px;text-transform:uppercase;}
+  .review-table td{padding:7px 10px;border-bottom:1px solid var(--line);}
+  .review-table td.k{color:var(--muted);width:45%;}
+
+  #filein{display:none;}
+
+  @media print{
+    #sidebar,#topbar,.no-print{display:none !important;}
+    #main,#content{padding:0;margin:0;}
+    .panel{display:block !important;}
+    #content{max-width:100%;}
+    body{background:#fff;}
+    .card{border:1px solid #999;break-inside:avoid;}
+  }
+  @media (max-width:820px){
+    body{flex-direction:column;}
+    #sidebar{position:relative;height:auto;width:100%;flex:none;}
+    .grid,.grid.g3{grid-template-columns:1fr;}
+    .home-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div style="background:#0f3d2e; padding:10px 18px; display:flex; align-items:center; gap:12px;">
+  <a href="index.html" style="color:#d4af37; font-weight:700; text-decoration:none; font-size:0.9rem;">← Back to Zaka Hub</a>
+  <span style="color:rgba(255,255,255,0.5); font-size:0.8rem;">ED46 (B1) Secondary School Census</span>
+</div>
+
+
+<aside id="sidebar">
+  <div class="brand">
+    <div class="tag">Zimbabwe · MoPSE</div>
+    <h1>ED46 (B1)<br>Secondary School Census</h1>
+  </div>
+  <div class="schoolname" id="sbSchoolName">No school name yet</div>
+  <nav id="navlist"></nav>
+  <div class="sidebar-foot">Offline data entry tool. All data stays on this PC — nothing is uploaded anywhere.</div>
+</aside>
+
+<div id="main">
+  <div id="topbar">
+    <div class="title" id="topTitle">Home</div>
+    <div class="actions no-print">
+      <button class="btn" id="btnLoad">Load Draft</button>
+      <button class="btn primary" id="btnSave">Save Draft</button>
+      <button class="btn" id="btnCSV">Export CSV / Excel</button>
+      <button class="btn gold" id="btnPDF">Export PDF (Print)</button>
+      <input type="file" id="filein" accept="application/json">
+    </div>
+  </div>
+  <div id="content"></div>
+</div>
+
+<script>
+/* ============================= STATE ============================= */
+const SECTIONS = [
+  {id:'home', label:'Home / Dashboard'},
+  {id:'school', label:'School Identification & Address'},
+  {id:'characteristics', label:'School Characteristics'},
+  {id:'ict', label:'ICT'},
+  {id:'enrolment', label:'Enrolment'},
+  {id:'staff', label:'Staff'},
+  {id:'facilities', label:'Facilities & Buildings'},
+  {id:'health', label:'Health, Safety & Sanitation'},
+  {id:'finance', label:'Finance & Expenditure'},
+  {id:'review', label:'Review & Export'},
+];
+
+function blankState(){
+  return {
+    meta:{ formVersion:'ED46-B1', savedAt:null },
+    school:{
+      name:'', emis:'', centreNo:'', province:'', district:'', ward:'', circuit:'',
+      authority:'', schoolType:'', location:'', address1:'', address2:'', town:'',
+      postalAddress:'', gps:'', yearOpened:'', headName:'', headTitle:'', headPhone:'',
+      headEmail:'', schoolPhone:'', schoolEmail:'', boarding:''
+    },
+    characteristics:{
+      ownership:'', curriculum:'', sessionType:'', languageOfInstruction:'', examCentreNo:'',
+      lowestForm:'', highestForm:'', doubleSession:'', specialClass:'', satelliteSchool:'',
+      infra:{ perimeterFence:false, electricityConnected:false, boreholeWater:false, pipedWater:false, hall:false, staffQuarters:false, sportsField:false }
+    },
+    ict:{
+      hasElectricity:'', electricitySource:'', hasComputerLab:'', numComputersTotal:'', numComputersWorking:'',
+      hasInternet:'', internetType:'', hasLibrary:'', hasLibraryICT:'', studentsUsingICTWeekly:'', ictTeacherTrained:''
+    },
+    enrolment:{
+      rows:[
+        {form:'Form 1', male:'', female:''},
+        {form:'Form 2', male:'', female:''},
+        {form:'Form 3', male:'', female:''},
+        {form:'Form 4', male:'', female:''},
+        {form:'Lower 6', male:'', female:''},
+        {form:'Upper 6', male:'', female:''},
+      ],
+      special:[]
+    },
+    staff:{ rows:[] },
+    facilities:{ rows:[], toiletsMaleStance:'', toiletsFemaleStance:'', toiletsStaffStance:'', waterSource:'', libraryBooks:'' },
+    health:{
+      firstAidKit:'', clinicNearbyKm:'', sanitaryFacilitiesGirls:'', feedingProgramme:'', handwashingFacilities:'',
+      guidanceCounsellingOffered:'', covidHandwashPoints:''
+    },
+    finance:{ incomeRows:[], expenditureRows:[] },
+    validation:[]
+  };
+}
+
+let state = loadFromMemory() || blankState();
+function loadFromMemory(){ return null; } // fresh start each session; use Save/Load Draft to persist
+
+let currentSection = 'home';
+
+/* ============================= UTIL ============================= */
+function num(v){ const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+function esc(s){ return (s===undefined||s===null) ? '' : String(s).replace(/"/g,'&quot;'); }
+function uid(){ return 'r'+Math.random().toString(36).slice(2,9); }
+function fmtNow(){ const d=new Date(); return d.toLocaleString(); }
+
+function setDeep(obj, path, val){
+  const parts = path.split('.'); let o = obj;
+  for(let i=0;i<parts.length-1;i++) o = o[parts[i]];
+  o[parts[parts.length-1]] = val;
+}
+function getDeep(obj, path){
+  return path.split('.').reduce((o,k)=> (o? o[k] : undefined), obj);
+}
+
+/* ============================= NAV RENDER ============================= */
+function renderNav(){
+  const nav = document.getElementById('navlist');
+  nav.innerHTML = '';
+  SECTIONS.forEach(sec=>{
+    const btn = document.createElement('button');
+    btn.className = 'navbtn' + (sec.id===currentSection ? ' active':'');
+    const dotClass = sectionStatus(sec.id);
+    btn.innerHTML = `<span class="dot ${dotClass}"></span><span>${sec.label}</span>`;
+    btn.onclick = ()=>{ currentSection = sec.id; render(); };
+    nav.appendChild(btn);
+  });
+  document.getElementById('sbSchoolName').textContent = state.school.name ? state.school.name : 'No school name yet';
+}
+
+function sectionStatus(id){
+  if(id==='home' || id==='review') return '';
+  const issues = validateSection(id);
+  if(issues.length) return 'warn';
+  if(sectionHasData(id)) return 'done';
+  return '';
+}
+function sectionHasData(id){
+  const s = state[id];
+  if(!s) return false;
+  const str = JSON.stringify(s);
+  return /[1-9a-zA-Z]/.test(str.replace(/"(form|male|female)"/g,''));
+}
+
+/* ============================= VALIDATION ============================= */
+function validateAll(){
+  let issues = [];
+  SECTIONS.forEach(sec=>{
+    if(sec.id==='home'||sec.id==='review') return;
+    issues = issues.concat(validateSection(sec.id).map(m=>({section:sec.label, message:m})));
+  });
+  return issues;
+}
+
+function validateSection(id){
+  const issues = [];
+  if(id==='school'){
+    const s = state.school;
+    if(!s.name) issues.push('School name is required.');
+    if(!s.emis) issues.push('EMIS number is required.');
+    if(!s.province) issues.push('Province is required.');
+    if(!s.district) issues.push('District is required.');
+    if(!s.headName) issues.push('Head of school name is required.');
+  }
+  if(id==='enrolment'){
+    state.enrolment.rows.forEach(r=>{
+      if(r.male===''||r.female==='') return; // allow blank = not offered
+      if(num(r.male)<0 || num(r.female)<0) issues.push(`${r.form}: enrolment cannot be negative.`);
+    });
+    const totalM = state.enrolment.rows.reduce((a,r)=>a+num(r.male),0);
+    const totalF = state.enrolment.rows.reduce((a,r)=>a+num(r.female),0);
+    if(totalM+totalF===0) issues.push('Total enrolment is zero — check that Form-level figures were entered.');
+    state.enrolment.special.forEach(r=>{
+      if(num(r.male)<0||num(r.female)<0) issues.push(`Special needs (${r.category||'unnamed'}): values cannot be negative.`);
+    });
+  }
+  if(id==='staff'){
+    state.staff.rows.forEach(r=>{
+      if(!r.name) issues.push('A staff row is missing a name.');
+      if(!r.sex) issues.push(`${r.name||'Unnamed staff'}: sex not selected.`);
+    });
+  }
+  if(id==='facilities'){
+    state.facilities.rows.forEach(r=>{
+      if(r.rooms!=='' && num(r.rooms)<0) issues.push(`${r.type||'Facility'}: room count cannot be negative.`);
+    });
+  }
+  if(id==='finance'){
+    state.finance.incomeRows.forEach(r=>{ if(num(r.amount)<0) issues.push(`Income "${r.source||'unnamed'}": amount cannot be negative.`); });
+    state.finance.expenditureRows.forEach(r=>{ if(num(r.amount)<0) issues.push(`Expenditure "${r.item||'unnamed'}": amount cannot be negative.`); });
+  }
+  return issues;
+}
+
+/* ============================= RENDER ROUTER ============================= */
+function render(){
+  renderNav();
+  document.getElementById('topTitle').textContent = SECTIONS.find(s=>s.id===currentSection).label;
+  const c = document.getElementById('content');
+  c.innerHTML = '';
+  const panel = document.createElement('div');
+  panel.className='panel active';
+  const fn = RENDERERS[currentSection];
+  panel.innerHTML = fn();
+  c.appendChild(panel);
+  attachHandlers(currentSection);
+  addFooterNav(panel);
+}
+
+function addFooterNav(panel){
+  if(currentSection==='home') return;
+  const idx = SECTIONS.findIndex(s=>s.id===currentSection);
+  const prev = SECTIONS[idx-1], next = SECTIONS[idx+1];
+  const div = document.createElement('div');
+  div.className='footer-nav no-print';
+  div.innerHTML = `
+    <button class="btn" ${!prev?'disabled style="visibility:hidden"':''} id="fnPrev">← ${prev?prev.label:''}</button>
+    <button class="btn primary" ${!next?'disabled style="visibility:hidden"':''} id="fnNext">${next?next.label:''} →</button>
+  `;
+  panel.appendChild(div);
+  if(prev) document.getElementById('fnPrev').onclick=()=>{currentSection=prev.id; render();};
+  if(next) document.getElementById('fnNext').onclick=()=>{currentSection=next.id; render();};
+}
+
+/* ============================= FIELD HELPERS ============================= */
+function textField(label, path, opts={}){
+  const val = esc(getDeep(state, path));
+  const type = opts.type || 'text';
+  return `<div class="field ${opts.full?'full':''}">
+    <label>${label}${opts.hint?`<span class="hint"> — ${opts.hint}</span>`:''}</label>
+    <input type="${type}" data-path="${path}" value="${val}" ${opts.placeholder?`placeholder="${opts.placeholder}"`:''}>
+  </div>`;
+}
+function selectField(label, path, options, opts={}){
+  const val = getDeep(state, path);
+  return `<div class="field ${opts.full?'full':''}">
+    <label>${label}</label>
+    <select data-path="${path}">
+      <option value="">— Select —</option>
+      ${options.map(o=>`<option value="${esc(o)}" ${val===o?'selected':''}>${o}</option>`).join('')}
+    </select>
+  </div>`;
+}
+function yesNoField(label, path, opts={}){
+  const val = getDeep(state, path);
+  return `<div class="field ${opts.full?'full':''}">
+    <label>${label}</label>
+    <div class="radiorow">
+      <label><input type="radio" name="${path}" data-path="${path}" value="Yes" ${val==='Yes'?'checked':''}> Yes</label>
+      <label><input type="radio" name="${path}" data-path="${path}" value="No" ${val==='No'?'checked':''}> No</label>
+    </div>
+  </div>`;
+}
+function checkField(label, path){
+  const val = getDeep(state, path);
+  return `<label><input type="checkbox" data-path="${path}" data-bool="1" ${val?'checked':''}> ${label}</label>`;
+}
+
+function attachInputs(container){
+  container.querySelectorAll('[data-path]').forEach(el=>{
+    const ev = (el.tagName==='SELECT' || el.type==='radio' || el.type==='checkbox') ? 'change' : 'input';
+    el.addEventListener(ev, ()=>{
+      let v = el.type==='checkbox' ? el.checked : el.value;
+      setDeep(state, el.dataset.path, v);
+      if(el.dataset.recalc) recalcAll();
+      renderNav();
+    });
+  });
+}
+
+/* ============================= RENDERERS ============================= */
+const RENDERERS = {};
+
+RENDERERS.home = function(){
+  const issues = validateAll();
+  const okCount = SECTIONS.filter(s=>s.id!=='home'&&s.id!=='review').length;
+  return `
+  <h2>Welcome${state.school.name? ', '+esc(state.school.name):''}</h2>
+  <p class="sub">Fill in each section of ED46 (B1) below. Your progress is tracked in the sidebar — a gold dot means a section needs attention, green means it looks complete.</p>
+  <div class="card">
+    <h3>Status</h3>
+    <p style="margin:0;font-size:13.5px;">Outstanding checks across the form: <strong style="color:${issues.length?'var(--error)':'var(--ok)'}">${issues.length}</strong>. Open <em>Review &amp; Export</em> any time to see the full list.</p>
+  </div>
+  <div class="home-grid">
+    ${SECTIONS.filter(s=>s.id!=='home').map(s=>`
+      <div class="home-card" data-goto="${s.id}">
+        <div class="hc-top"><h4>${s.label}</h4><span class="badge ${sectionStatus(s.id)==='warn'?'warn':'ok'}">${sectionStatus(s.id)==='warn'?'Check':(sectionHasData(s.id)?'Started':'Empty')}</span></div>
+        <p>${sectionBlurb(s.id)}</p>
+      </div>`).join('')}
+  </div>`;
+};
+function sectionBlurb(id){
+  return {
+    school:'School identity, address, contacts and head details.',
+    characteristics:'Ownership, curriculum, sessions and basic infrastructure.',
+    ict:'Electricity, computers, internet access and ICT use.',
+    enrolment:'Pupils by Form level and gender, plus special needs categories.',
+    staff:'Staff register — teaching and non-teaching.',
+    facilities:'Classrooms, blocks, toilets, water and library.',
+    health:'Health, safety, sanitation and welfare items.',
+    finance:'Income and expenditure summary.',
+    review:'Check for errors, then export to PDF, Excel/CSV or a draft file.'
+  }[id]||'';
+}
+
+RENDERERS.school = function(){
+  const s='school';
+  return `
+  <h2>School Identification & Address</h2>
+  <p class="sub">Core identifying details for the school and its head.</p>
+  <div class="card"><h3>Identification</h3><div class="grid">
+    ${textField('School Name', s+'.name', {full:true})}
+    ${textField('EMIS Number', s+'.emis')}
+    ${textField('Exam Centre Number', s+'.centreNo')}
+    ${textField('Province', s+'.province')}
+    ${textField('District', s+'.district')}
+    ${textField('Ward', s+'.ward')}
+    ${textField('Circuit', s+'.circuit')}
+    ${selectField('Responsible Authority', s+'.authority', ['Government','Council','Mission/Church','Trust','Private','Community','Mine/Farm'])}
+    ${selectField('School Type', s+'.schoolType', ['Day','Boarding','Day & Boarding'])}
+    ${selectField('Location', s+'.location', ['Urban','Rural','Peri-urban','Farm','Mine','Resettlement'])}
+  </div></div>
+  <div class="card"><h3>Address & Contacts</h3><div class="grid">
+    ${textField('Address Line 1', s+'.address1', {full:true})}
+    ${textField('Address Line 2', s+'.address2', {full:true})}
+    ${textField('Town / Growth Point', s+'.town')}
+    ${textField('Postal Address', s+'.postalAddress')}
+    ${textField('GPS Coordinates', s+'.gps', {hint:'optional'})}
+    ${textField('Year School Opened', s+'.yearOpened', {type:'number'})}
+    ${textField('School Phone', s+'.schoolPhone')}
+    ${textField('School Email', s+'.schoolEmail', {type:'email'})}
+  </div></div>
+  <div class="card"><h3>Head of School</h3><div class="grid">
+    ${textField('Head\'s Full Name', s+'.headName')}
+    ${textField('Title (Mr/Mrs/Dr...)', s+'.headTitle')}
+    ${textField('Head\'s Phone', s+'.headPhone')}
+    ${textField('Head\'s Email', s+'.headEmail', {type:'email'})}
+  </div></div>`;
+};
+
+RENDERERS.characteristics = function(){
+  const s='characteristics';
+  const infra = state.characteristics.infra;
+  return `
+  <h2>School Characteristics</h2>
+  <p class="sub">Ownership, curriculum structure and basic infrastructure indicators.</p>
+  <div class="card"><h3>General</h3><div class="grid">
+    ${selectField('Ownership', s+'.ownership', ['Government','Mission','Council','Trust','Private','Community'])}
+    ${selectField('Curriculum Followed', s+'.curriculum', ['ZIMSEC Heritage-Based Curriculum 2024-2030','Cambridge','Other'])}
+    ${selectField('Session Type', s+'.sessionType', ['Single Session','Double Session'])}
+    ${textField('Language of Instruction', s+'.languageOfInstruction')}
+    ${textField('Exam Centre Number', s+'.examCentreNo')}
+    ${selectField('Lowest Form Offered', s+'.lowestForm', ['Form 1','Form 2','Form 3'])}
+    ${selectField('Highest Form Offered', s+'.highestForm', ['Form 4','Lower 6','Upper 6'])}
+    ${yesNoField('Special Needs Class Available', s+'.specialClass')}
+    ${yesNoField('Satellite School', s+'.satelliteSchool')}
+  </div></div>
+  <div class="card"><h3>Basic Infrastructure Present</h3>
+    <div class="checkrow">
+      ${checkField('Perimeter Fence', s+'.infra.perimeterFence')}
+      ${checkField('Electricity Connected', s+'.infra.electricityConnected')}
+      ${checkField('Borehole Water', s+'.infra.boreholeWater')}
+      ${checkField('Piped/Municipal Water', s+'.infra.pipedWater')}
+      ${checkField('Assembly Hall', s+'.infra.hall')}
+      ${checkField('Staff Quarters', s+'.infra.staffQuarters')}
+      ${checkField('Sports Field', s+'.infra.sportsField')}
+    </div>
+  </div>`;
+};
+
+RENDERERS.ict = function(){
+  const s='ict';
+  return `
+  <h2>ICT</h2>
+  <p class="sub">Electricity, computers, internet and ICT usage.</p>
+  <div class="card"><h3>Electricity</h3><div class="grid">
+    ${yesNoField('Electricity at School', s+'.hasElectricity')}
+    ${selectField('Main Electricity Source', s+'.electricitySource', ['ZESA Grid','Solar','Generator','None'])}
+  </div></div>
+  <div class="card"><h3>Computers & Internet</h3><div class="grid">
+    ${yesNoField('Has Computer Lab', s+'.hasComputerLab')}
+    ${textField('Total Computers', s+'.numComputersTotal', {type:'number'})}
+    ${textField('Working Computers', s+'.numComputersWorking', {type:'number'})}
+    ${yesNoField('Internet Access', s+'.hasInternet')}
+    ${selectField('Internet Type', s+'.internetType', ['Fibre','Mobile Data/Dongle','Satellite','None'])}
+    ${textField('Pupils Using ICT Weekly', s+'.studentsUsingICTWeekly', {type:'number'})}
+    ${yesNoField('ICT Teacher Trained', s+'.ictTeacherTrained')}
+  </div></div>
+  <div class="card"><h3>Library</h3><div class="grid">
+    ${yesNoField('Has Library', s+'.hasLibrary')}
+    ${yesNoField('Library Has ICT Access', s+'.hasLibraryICT')}
+  </div></div>`;
+};
+
+RENDERERS.enrolment = function(){
+  const rows = state.enrolment.rows;
+  const totM = rows.reduce((a,r)=>a+num(r.male),0);
+  const totF = rows.reduce((a,r)=>a+num(r.female),0);
+  const spRows = state.enrolment.special;
+  const spTotM = spRows.reduce((a,r)=>a+num(r.male),0);
+  const spTotF = spRows.reduce((a,r)=>a+num(r.female),0);
+  return `
+  <h2>Enrolment</h2>
+  <p class="sub">Enter Male and Female pupil counts per Form level. Totals calculate automatically.</p>
+  <div class="card"><h3>Enrolment by Form Level</h3>
+    <table class="grid-table" id="enrolTable">
+      <thead><tr><th style="width:30%">Form Level</th><th>Male</th><th>Female</th><th>Total</th></tr></thead>
+      <tbody>
+        ${rows.map((r,i)=>`
+          <tr>
+            <td><input type="text" data-idx="${i}" data-field="form" value="${esc(r.form)}"></td>
+            <td><input type="number" min="0" data-idx="${i}" data-field="male" value="${esc(r.male)}"></td>
+            <td><input type="number" min="0" data-idx="${i}" data-field="female" value="${esc(r.female)}"></td>
+            <td style="text-align:right;font-weight:600;">${num(r.male)+num(r.female)}</td>
+          </tr>`).join('')}
+      </tbody>
+      <tfoot><tr><td>Total</td><td>${totM}</td><td>${totF}</td><td>${totM+totF}</td></tr></tfoot>
+    </table>
+  </div>
+  <div class="card"><h3>Special Needs Categories</h3>
+    <table class="grid-table" id="specialTable">
+      <thead><tr><th style="width:40%">Category</th><th>Male</th><th>Female</th><th>Total</th><th></th></tr></thead>
+      <tbody>
+        ${spRows.map((r,i)=>`
+          <tr>
+            <td><input type="text" data-sidx="${i}" data-field="category" value="${esc(r.category)}" placeholder="e.g. Visual impairment"></td>
+            <td><input type="number" min="0" data-sidx="${i}" data-field="male" value="${esc(r.male)}"></td>
+            <td><input type="number" min="0" data-sidx="${i}" data-field="female" value="${esc(r.female)}"></td>
+            <td style="text-align:right;">${num(r.male)+num(r.female)}</td>
+            <td><button class="rowdel" data-delspecial="${i}" title="Remove row">✕</button></td>
+          </tr>`).join('')}
+      </tbody>
+      <tfoot><tr><td>Total</td><td>${spTotM}</td><td>${spTotF}</td><td>${spTotM+spTotF}</td><td></td></tr></tfoot>
+    </table>
+    <button class="btn small addrow" id="addSpecial">+ Add Special Needs Category</button>
+    <p class="hint" style="margin-top:8px;">Note: a pupil already counted in the Form-level totals above should not also be counted twice here — this table records the breakdown, not additional pupils.</p>
+  </div>`;
+};
+
+RENDERERS.staff = function(){
+  const rows = state.staff.rows;
+  const teaching = rows.filter(r=>r.category==='Teaching').length;
+  const nonTeaching = rows.filter(r=>r.category==='Non-Teaching').length;
+  return `
+  <h2>Staff</h2>
+  <p class="sub">Add one row per staff member.</p>
+  <div class="card">
+    <h3>Staff Register <span class="badge ok" style="margin-left:8px;">${teaching} Teaching</span> <span class="badge ok">${nonTeaching} Non-Teaching</span></h3>
+    <table class="grid-table" id="staffTable">
+      <thead><tr><th>Name</th><th style="width:80px">Sex</th><th>Category</th><th>Qualification</th><th>Subject/Role</th><th style="width:110px">Status</th><th></th></tr></thead>
+      <tbody>
+        ${rows.map((r,i)=>`
+          <tr>
+            <td><input type="text" data-idx="${i}" data-field="name" value="${esc(r.name)}"></td>
+            <td><select data-idx="${i}" data-field="sex">
+                <option value=""></option><option ${r.sex==='M'?'selected':''}>M</option><option ${r.sex==='F'?'selected':''}>F</option>
+              </select></td>
+            <td><select data-idx="${i}" data-field="category">
+                <option value=""></option>
+                <option ${r.category==='Teaching'?'selected':''}>Teaching</option>
+                <option ${r.category==='Non-Teaching'?'selected':''}>Non-Teaching</option>
+              </select></td>
+            <td><input type="text" data-idx="${i}" data-field="qualification" value="${esc(r.qualification)}"></td>
+            <td><input type="text" data-idx="${i}" data-field="subject" value="${esc(r.subject)}"></td>
+            <td><select data-idx="${i}" data-field="status">
+                <option value=""></option>
+                <option ${r.status==='Permanent'?'selected':''}>Permanent</option>
+                <option ${r.status==='Temporary'?'selected':''}>Temporary</option>
+                <option ${r.status==='Vacancy'?'selected':''}>Vacancy</option>
+              </select></td>
+            <td><button class="rowdel" data-delstaff="${i}">✕</button></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    <button class="btn small addrow" id="addStaff">+ Add Staff Member</button>
+  </div>`;
+};
+
+RENDERERS.facilities = function(){
+  const rows = state.facilities.rows;
+  const f = state.facilities;
+  return `
+  <h2>Facilities & Buildings</h2>
+  <p class="sub">Record blocks/rooms by facility type, then key sanitation and water items.</p>
+  <div class="card"><h3>Facility / Building Register</h3>
+    <table class="grid-table" id="facTable">
+      <thead><tr><th style="width:30%">Facility Type</th><th>Blocks</th><th>Rooms</th><th>Condition</th><th></th></tr></thead>
+      <tbody>
+        ${rows.map((r,i)=>`
+          <tr>
+            <td><input type="text" data-idx="${i}" data-field="type" value="${esc(r.type)}" placeholder="e.g. Classroom Block"></td>
+            <td><input type="number" min="0" data-idx="${i}" data-field="blocks" value="${esc(r.blocks)}"></td>
+            <td><input type="number" min="0" data-idx="${i}" data-field="rooms" value="${esc(r.rooms)}"></td>
+            <td><select data-idx="${i}" data-field="condition">
+                <option value=""></option>
+                <option ${r.condition==='Good'?'selected':''}>Good</option>
+                <option ${r.condition==='Fair'?'selected':''}>Fair</option>
+                <option ${r.condition==='Poor'?'selected':''}>Poor</option>
+              </select></td>
+            <td><button class="rowdel" data-delfac="${i}">✕</button></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    <button class="btn small addrow" id="addFac">+ Add Facility Row</button>
+  </div>
+  <div class="card"><h3>Toilets, Water & Library</h3><div class="grid g3">
+    ${textField('Toilet Stances — Boys', 'facilities.toiletsMaleStance', {type:'number'})}
+    ${textField('Toilet Stances — Girls', 'facilities.toiletsFemaleStance', {type:'number'})}
+    ${textField('Toilet Stances — Staff', 'facilities.toiletsStaffStance', {type:'number'})}
+    ${selectField('Main Water Source', 'facilities.waterSource', ['Piped/Municipal','Borehole','Well','River/Dam','None'])}
+    ${textField('Library Books (approx.)', 'facilities.libraryBooks', {type:'number'})}
+  </div></div>`;
+};
+
+RENDERERS.health = function(){
+  const s='health';
+  return `
+  <h2>Health, Safety & Sanitation</h2>
+  <p class="sub">Welfare, safety and sanitation indicators.</p>
+  <div class="card"><h3>Health & Safety</h3><div class="grid">
+    ${yesNoField('First Aid Kit Available', s+'.firstAidKit')}
+    ${textField('Distance to Nearest Clinic (km)', s+'.clinicNearbyKm', {type:'number'})}
+    ${yesNoField('Sanitary Facilities for Girls', s+'.sanitaryFacilitiesGirls')}
+    ${yesNoField('Feeding Programme Active', s+'.feedingProgramme')}
+    ${yesNoField('Handwashing Facilities Available', s+'.handwashingFacilities')}
+    ${yesNoField('Guidance & Counselling Offered', s+'.guidanceCounsellingOffered')}
+    ${textField('Handwashing Points on Site', s+'.covidHandwashPoints', {type:'number'})}
+  </div></div>`;
+};
+
+RENDERERS.finance = function(){
+  const inc = state.finance.incomeRows;
+  const exp = state.finance.expenditureRows;
+  const totInc = inc.reduce((a,r)=>a+num(r.amount),0);
+  const totExp = exp.reduce((a,r)=>a+num(r.amount),0);
+  return `
+  <h2>Finance & Expenditure</h2>
+  <p class="sub">Summarise income sources and expenditure items for the period.</p>
+  <div class="card"><h3>Income</h3>
+    <table class="grid-table" id="incTable">
+      <thead><tr><th>Source</th><th style="width:160px">Amount (US$)</th><th></th></tr></thead>
+      <tbody>
+        ${inc.map((r,i)=>`
+          <tr><td><input type="text" data-incidx="${i}" data-field="source" value="${esc(r.source)}"></td>
+              <td><input type="number" min="0" data-incidx="${i}" data-field="amount" value="${esc(r.amount)}"></td>
+              <td><button class="rowdel" data-delinc="${i}">✕</button></td></tr>`).join('')}
+      </tbody>
+      <tfoot><tr><td>Total Income</td><td>${totInc.toFixed(2)}</td><td></td></tr></tfoot>
+    </table>
+    <button class="btn small addrow" id="addInc">+ Add Income Source</button>
+  </div>
+  <div class="card"><h3>Expenditure</h3>
+    <table class="grid-table" id="expTable">
+      <thead><tr><th>Item</th><th style="width:160px">Amount (US$)</th><th></th></tr></thead>
+      <tbody>
+        ${exp.map((r,i)=>`
+          <tr><td><input type="text" data-expidx="${i}" data-field="item" value="${esc(r.item)}"></td>
+              <td><input type="number" min="0" data-expidx="${i}" data-field="amount" value="${esc(r.amount)}"></td>
+              <td><button class="rowdel" data-delexp="${i}">✕</button></td></tr>`).join('')}
+      </tbody>
+      <tfoot><tr><td>Total Expenditure</td><td>${totExp.toFixed(2)}</td><td></td></tr></tfoot>
+    </table>
+    <button class="btn small addrow" id="addExp">+ Add Expenditure Item</button>
+  </div>
+  <div class="card"><h3>Balance</h3>
+    <p style="font-size:14px;margin:0;">Income minus Expenditure: <strong style="color:${(totInc-totExp)<0?'var(--error)':'var(--ok)'}">US$ ${(totInc-totExp).toFixed(2)}</strong></p>
+  </div>`;
+};
+
+RENDERERS.review = function(){
+  const issues = validateAll();
+  const s = state.school;
+  const enr = state.enrolment.rows;
+  const totM = enr.reduce((a,r)=>a+num(r.male),0), totF = enr.reduce((a,r)=>a+num(r.female),0);
+  return `
+  <h2>Review & Export</h2>
+  <p class="sub">Check everything below before exporting. Fix any items in the checklist, then export.</p>
+
+  <div class="card">
+    <h3>Validation Checklist ${issues.length? `<span class="badge warn">${issues.length} to fix</span>`:`<span class="badge ok">All clear</span>`}</h3>
+    <ul class="issue-list ${issues.length?'':'clean'}">
+      ${issues.length ? issues.map(i=>`<li><span class="sec">${i.section}:</span> ${i.message}</li>`).join('')
+        : '<li>No issues found. The form looks complete and consistent.</li>'}
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Summary</h3>
+    <table class="review-table">
+      <tr><td class="k">School</td><td>${esc(s.name)||'—'}</td></tr>
+      <tr><td class="k">EMIS Number</td><td>${esc(s.emis)||'—'}</td></tr>
+      <tr><td class="k">Province / District</td><td>${esc(s.province)||'—'} / ${esc(s.district)||'—'}</td></tr>
+      <tr><td class="k">Head of School</td><td>${esc(s.headName)||'—'}</td></tr>
+      <tr><td class="k">Total Enrolment</td><td>${totM+totF} (Male ${totM} / Female ${totF})</td></tr>
+      <tr><td class="k">Staff Records</td><td>${state.staff.rows.length}</td></tr>
+      <tr><td class="k">Facility Rows</td><td>${state.facilities.rows.length}</td></tr>
+    </table>
+  </div>
+
+  <div class="card no-print">
+    <h3>Export</h3>
+    <p style="font-size:13px;color:var(--muted);margin-top:0;">Choose how you'd like to get this data out of the tool.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn primary" id="revSave">Save Draft (.json)</button>
+      <button class="btn" id="revCSV">Export CSV / Excel</button>
+      <button class="btn gold" id="revPDF">Export PDF (Print)</button>
+    </div>
+    <p class="hint" style="margin-top:10px;">PDF export opens your browser's Print dialog — choose "Save as PDF" as the printer/destination. The CSV file opens directly in Excel.</p>
+  </div>
+
+  <div id="printSummary" style="display:none;"></div>
+  `;
+};
+
+/* ============================= DYNAMIC ROW HANDLERS ============================= */
+function attachHandlers(section){
+  const c = document.getElementById('content');
+  attachInputs(c);
+
+  if(section==='enrolment'){
+    c.querySelectorAll('#enrolTable input').forEach(el=>{
+      el.addEventListener('input', ()=>{
+        const i = el.dataset.idx, f = el.dataset.field;
+        state.enrolment.rows[i][f] = el.value;
+        render();
+      });
+    });
+    c.querySelectorAll('#specialTable input').forEach(el=>{
+      el.addEventListener('input', ()=>{
+        const i = el.dataset.sidx, f = el.dataset.field;
+        state.enrolment.special[i][f] = el.value;
+        render();
+      });
+    });
+    c.querySelectorAll('[data-delspecial]').forEach(el=>{
+      el.addEventListener('click', ()=>{ state.enrolment.special.splice(el.dataset.delspecial,1); render(); });
+    });
+    const addSp = document.getElementById('addSpecial');
+    if(addSp) addSp.onclick = ()=>{ state.enrolment.special.push({category:'',male:'',female:''}); render(); };
+  }
+
+  if(section==='staff'){
+    c.querySelectorAll('#staffTable input,#staffTable select').forEach(el=>{
+      el.addEventListener(el.tagName==='SELECT'?'change':'input', ()=>{
+        const i = el.dataset.idx, f = el.dataset.field;
+        state.staff.rows[i][f] = el.value; render();
+      });
+    });
+    c.querySelectorAll('[data-delstaff]').forEach(el=>{
+      el.addEventListener('click', ()=>{ state.staff.rows.splice(el.dataset.delstaff,1); render(); });
+    });
+    const addS = document.getElementById('addStaff');
+    if(addS) addS.onclick = ()=>{ state.staff.rows.push({name:'',sex:'',category:'',qualification:'',subject:'',status:''}); render(); };
+  }
+
+  if(section==='facilities'){
+    c.querySelectorAll('#facTable input,#facTable select').forEach(el=>{
+      el.addEventListener(el.tagName==='SELECT'?'change':'input', ()=>{
+        const i = el.dataset.idx, f = el.dataset.field;
+        state.facilities.rows[i][f] = el.value; render();
+      });
+    });
+    c.querySelectorAll('[data-delfac]').forEach(el=>{
+      el.addEventListener('click', ()=>{ state.facilities.rows.splice(el.dataset.delfac,1); render(); });
+    });
+    const addF = document.getElementById('addFac');
+    if(addF) addF.onclick = ()=>{ state.facilities.rows.push({type:'',blocks:'',rooms:'',condition:''}); render(); };
+  }
+
+  if(section==='finance'){
+    c.querySelectorAll('#incTable input').forEach(el=>{
+      el.addEventListener('input', ()=>{
+        const i = el.dataset.incidx, f = el.dataset.field;
+        state.finance.incomeRows[i][f] = el.value; render();
+      });
+    });
+    c.querySelectorAll('[data-delinc]').forEach(el=>{
+      el.addEventListener('click', ()=>{ state.finance.incomeRows.splice(el.dataset.delinc,1); render(); });
+    });
+    const addInc = document.getElementById('addInc');
+    if(addInc) addInc.onclick = ()=>{ state.finance.incomeRows.push({source:'',amount:''}); render(); };
+
+    c.querySelectorAll('#expTable input').forEach(el=>{
+      el.addEventListener('input', ()=>{
+        const i = el.dataset.expidx, f = el.dataset.field;
+        state.finance.expenditureRows[i][f] = el.value; render();
+      });
+    });
+    c.querySelectorAll('[data-delexp]').forEach(el=>{
+      el.addEventListener('click', ()=>{ state.finance.expenditureRows.splice(el.dataset.delexp,1); render(); });
+    });
+    const addExp = document.getElementById('addExp');
+    if(addExp) addExp.onclick = ()=>{ state.finance.expenditureRows.push({item:'',amount:''}); render(); };
+  }
+
+  if(section==='home'){
+    c.querySelectorAll('[data-goto]').forEach(el=>{
+      el.addEventListener('click', ()=>{ currentSection = el.dataset.goto; render(); });
+    });
+  }
+
+  if(section==='review'){
+    document.getElementById('revSave').onclick = saveDraft;
+    document.getElementById('revCSV').onclick = exportCSV;
+    document.getElementById('revPDF').onclick = exportPDF;
+  }
+}
+
+/* ============================= SAVE / LOAD ============================= */
+function saveDraft(){
+  state.meta.savedAt = fmtNow();
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  const fname = (state.school.name || 'ED46_draft').replace(/[^a-z0-9]+/gi,'_');
+  a.href = URL.createObjectURL(blob);
+  a.download = fname + '_ED46_draft.json';
+  a.click();
+}
+
+function loadDraftFile(file){
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      const loaded = JSON.parse(e.target.result);
+      state = Object.assign(blankState(), loaded);
+      currentSection = 'home';
+      render();
+      alert('Draft loaded successfully.');
+    }catch(err){
+      alert('Could not read this file. Please make sure it is a draft .json file saved by this tool.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ============================= CSV EXPORT ============================= */
+function csvEscape(v){
+  v = (v===undefined||v===null)?'':String(v);
+  if(/[",\n]/.test(v)) return '"' + v.replace(/"/g,'""') + '"';
+  return v;
+}
+function exportCSV(){
+  const lines = [];
+  const push = (arr)=> lines.push(arr.map(csvEscape).join(','));
+
+  push(['ED46 (B1) SECONDARY SCHOOL CENSUS — EXPORT']);
+  push(['Generated', fmtNow()]);
+  lines.push('');
+
+  push(['SECTION: SCHOOL IDENTIFICATION & ADDRESS']);
+  Object.entries(state.school).forEach(([k,v])=>push([k,v]));
+  lines.push('');
+
+  push(['SECTION: CHARACTERISTICS']);
+  Object.entries(state.characteristics).forEach(([k,v])=>{
+    if(k==='infra'){ Object.entries(v).forEach(([ik,iv])=>push(['infra.'+ik, iv?'Yes':'No'])); }
+    else push([k,v]);
+  });
+  lines.push('');
+
+  push(['SECTION: ICT']);
+  Object.entries(state.ict).forEach(([k,v])=>push([k,v]));
+  lines.push('');
+
+  push(['SECTION: ENROLMENT']);
+  push(['Form','Male','Female','Total']);
+  state.enrolment.rows.forEach(r=>push([r.form,r.male,r.female,num(r.male)+num(r.female)]));
+  push(['SPECIAL NEEDS']);
+  push(['Category','Male','Female','Total']);
+  state.enrolment.special.forEach(r=>push([r.category,r.male,r.female,num(r.male)+num(r.female)]));
+  lines.push('');
+
+  push(['SECTION: STAFF']);
+  push(['Name','Sex','Category','Qualification','Subject/Role','Status']);
+  state.staff.rows.forEach(r=>push([r.name,r.sex,r.category,r.qualification,r.subject,r.status]));
+  lines.push('');
+
+  push(['SECTION: FACILITIES & BUILDINGS']);
+  push(['Type','Blocks','Rooms','Condition']);
+  state.facilities.rows.forEach(r=>push([r.type,r.blocks,r.rooms,r.condition]));
+  push(['Toilets Boys',state.facilities.toiletsMaleStance]);
+  push(['Toilets Girls',state.facilities.toiletsFemaleStance]);
+  push(['Toilets Staff',state.facilities.toiletsStaffStance]);
+  push(['Water Source',state.facilities.waterSource]);
+  push(['Library Books',state.facilities.libraryBooks]);
+  lines.push('');
+
+  push(['SECTION: HEALTH, SAFETY & SANITATION']);
+  Object.entries(state.health).forEach(([k,v])=>push([k,v]));
+  lines.push('');
+
+  push(['SECTION: FINANCE']);
+  push(['Income Source','Amount']);
+  state.finance.incomeRows.forEach(r=>push([r.source,r.amount]));
+  push(['Expenditure Item','Amount']);
+  state.finance.expenditureRows.forEach(r=>push([r.item,r.amount]));
+
+  const csv = lines.join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  const fname = (state.school.name || 'ED46').replace(/[^a-z0-9]+/gi,'_');
+  a.href = URL.createObjectURL(blob);
+  a.download = fname + '_ED46_export.csv';
+  a.click();
+}
+
+/* ============================= PDF EXPORT (PRINT) ============================= */
+function exportPDF(){
+  const s = state.school;
+  const enr = state.enrolment.rows;
+  const totM = enr.reduce((a,r)=>a+num(r.male),0), totF = enr.reduce((a,r)=>a+num(r.female),0);
+  const win = window.open('', '_blank');
+  const style = `
+    <style>
+      body{font-family:Georgia,serif;color:#111;padding:30px;}
+      h1{font-size:20px;margin-bottom:2px;}
+      h2{font-size:14px;color:#0F2A47;border-bottom:1px solid #ccc;padding-bottom:4px;margin-top:26px;}
+      table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;}
+      td,th{border:1px solid #ccc;padding:5px 8px;text-align:left;}
+      th{background:#EAF0F6;}
+      .meta{font-size:12px;color:#555;margin-bottom:14px;}
+    </style>`;
+  const rows = (obj)=>Object.entries(obj).filter(([k])=>k!=='infra').map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+  const html = `
+    <html><head><title>ED46 Export — ${esc(s.name)}</title>${style}</head>
+    <body onload="window.print()">
+      <h1>ED46 (B1) Secondary School Census</h1>
+      <div class="meta">${esc(s.name)||'(no school name)'} — generated ${fmtNow()}</div>
+
+      <h2>School Identification & Address</h2>
+      <table>${rows(state.school)}</table>
+
+      <h2>School Characteristics</h2>
+      <table>${rows(state.characteristics)}</table>
+
+      <h2>ICT</h2>
+      <table>${rows(state.ict)}</table>
+
+      <h2>Enrolment</h2>
+      <table><tr><th>Form</th><th>Male</th><th>Female</th><th>Total</th></tr>
+      ${enr.map(r=>`<tr><td>${r.form}</td><td>${r.male}</td><td>${r.female}</td><td>${num(r.male)+num(r.female)}</td></tr>`).join('')}
+      <tr><th>Total</th><th>${totM}</th><th>${totF}</th><th>${totM+totF}</th></tr></table>
+
+      <h2>Staff (${state.staff.rows.length})</h2>
+      <table><tr><th>Name</th><th>Sex</th><th>Category</th><th>Qualification</th><th>Subject/Role</th><th>Status</th></tr>
+      ${state.staff.rows.map(r=>`<tr><td>${r.name}</td><td>${r.sex}</td><td>${r.category}</td><td>${r.qualification}</td><td>${r.subject}</td><td>${r.status}</td></tr>`).join('')}
+      </table>
+
+      <h2>Facilities & Buildings</h2>
+      <table><tr><th>Type</th><th>Blocks</th><th>Rooms</th><th>Condition</th></tr>
+      ${state.facilities.rows.map(r=>`<tr><td>${r.type}</td><td>${r.blocks}</td><td>${r.rooms}</td><td>${r.condition}</td></tr>`).join('')}
+      </table>
+
+      <h2>Health, Safety & Sanitation</h2>
+      <table>${rows(state.health)}</table>
+
+      <h2>Finance</h2>
+      <table><tr><th>Income Source</th><th>Amount</th></tr>
+      ${state.finance.incomeRows.map(r=>`<tr><td>${r.source}</td><td>${r.amount}</td></tr>`).join('')}
+      </table>
+      <table><tr><th>Expenditure Item</th><th>Amount</th></tr>
+      ${state.finance.expenditureRows.map(r=>`<tr><td>${r.item}</td><td>${r.amount}</td></tr>`).join('')}
+      </table>
+    </body></html>`;
+  win.document.write(html);
+  win.document.close();
+}
+
+/* ============================= TOPBAR WIRING ============================= */
+document.getElementById('btnSave').onclick = saveDraft;
+document.getElementById('btnCSV').onclick = exportCSV;
+document.getElementById('btnPDF').onclick = exportPDF;
+document.getElementById('btnLoad').onclick = ()=> document.getElementById('filein').click();
+document.getElementById('filein').addEventListener('change', (e)=>{
+  if(e.target.files[0]) loadDraftFile(e.target.files[0]);
+});
+
+/* ============================= INIT ============================= */
+render();
+</script>
+</body>
+</html>

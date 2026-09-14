@@ -507,7 +507,7 @@
       <img src="icon-192.png" alt="Zaka District Schools Hub crest" style="width:60px; height:60px; flex-shrink:0;">
       <div style="text-align:left;">
         <h1 style="margin:0;">ZAKA DISTRICT SCHOOLS HUB</h1>
-        <p style="margin:4px 0 0;">AI Portal • Version 6.1 (PIN Security + Role Access + Auto-Update)</p>
+        <p style="margin:4px 0 0;">Digital Education, Administration &amp; School Services • v7.0</p>
       </div>
     </div>
   </header>
@@ -1102,6 +1102,7 @@
           document.getElementById('pinModal').classList.remove('show');
           if (pinVerifyAction === 'enrollment') renderEnrollmentMode();
           else if (pinVerifyAction === 'forms') renderFormsPortal();
+          else if (pinVerifyAction === 'ed46') window.open('ed46.html', '_blank');
         } else {
           alert('❌ Incorrect PIN. Try again.');
           clearPinEntry();
@@ -1113,6 +1114,18 @@
       openPinModal('verify', 'Verify PIN', 'Enter your 4-digit PIN to access this area', action);
     }
 
+    // ── NAVIGATION ────────────────────────────────────────────────────────
+    function navTo(tab, btn) {
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      window.scrollTo(0, 0);
+      if (tab === 'home')     renderHome();
+      else if (tab === 'services') renderServicesTab();
+      else if (tab === 'learn')    renderLearnTab();
+      else if (tab === 'exams')    renderExaminations();
+      else if (tab === 'more')     renderMoreTab();
+    }
+
     function setActiveNav(button, renderFunc) {
       document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
       if (button) button.classList.add('active');
@@ -1120,14 +1133,12 @@
     }
 
     function goHome() {
-      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-      renderHome();
+      navTo('home', document.getElementById('nav-home'));
     }
 
     function signOut() {
       localStorage.removeItem(ROLE_KEY);
-      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-      renderHome();
+      navTo('home', document.getElementById('nav-home'));
       window.scrollTo(0, 0);
     }
 
@@ -1136,21 +1147,22 @@
       renderHome();
     }
 
+    // ── HOME TAB ──────────────────────────────────────────────────────────
     function renderHome() {
       const role = getUserRole();
 
       if (!role) {
-        // Show full-screen role picker
         let html = `<div class="home-screen">
           <div class="home-welcome">
             <div style="font-size:2.5rem; margin-bottom:8px;">🏫</div>
-            <h2 style="border:none; margin-bottom:6px; color:#0f3d2e;">Welcome to Zaka Hub</h2>
-            <p style="color:#718096; margin:0; font-size:0.9rem;">Select your role to access the portal</p>
+            <h2 style="border:none; margin-bottom:4px; color:#0f3d2e; font-size:1.4rem;">Zaka District Schools Hub</h2>
+            <p style="color:#4a5568; margin:0 0 4px; font-size:0.85rem; font-weight:600;">Digital Education, Administration &amp; School Services</p>
+            <p style="color:#718096; margin:0; font-size:0.8rem;">Select your role to continue</p>
           </div>
           <button class="role-btn" onclick="selectRole('teacher')">
             <span class="role-btn-icon">👨‍🏫</span>
             Teacher
-            <span class="role-btn-sub">AI Copilot • Lesson Materials • Exams • Forms</span>
+            <span class="role-btn-sub">AI Copilot • Lesson Planning • Exams • Forms</span>
           </button>
           <button class="role-btn" onclick="selectRole('learner')">
             <span class="role-btn-icon">👨‍🎓</span>
@@ -1158,45 +1170,266 @@
             <span class="role-btn-sub">Study Notes • Practice Questions • Exam Papers</span>
           </button>
           <button class="role-btn" onclick="selectRole('admin')">
-            <span class="role-btn-icon">👔</span>
-            Administrator
-            <span class="role-btn-sub">Heads • Inspectors • HODs • Deputy Heads</span>
+            <span class="role-btn-icon">🏫</span>
+            School Leader
+            <span class="role-btn-sub">Heads • HODs • Inspectors • District Officers</span>
           </button>
-          <div style="text-align:center; margin-top:24px; padding-top:16px; border-top:1px solid #e2e8f0; width:100%;">
-            <p style="color:#718096; font-size:0.8rem; margin:0;">🔒 PIN protects Enrollment &amp; Forms</p>
+          <div style="text-align:center; margin-top:20px; padding-top:14px; border-top:1px solid #e2e8f0; width:100%;">
+            <p style="color:#a0aec0; font-size:0.75rem; margin:0;">🔒 PIN protects Enrollment &amp; Forms &nbsp;|&nbsp; Works offline</p>
           </div>
         </div>`;
         document.getElementById('app').innerHTML = html;
         return;
       }
 
-      // Returning user — show dashboard
-      const roleLabel = role === 'admin' ? 'Administrator' : role.charAt(0).toUpperCase() + role.slice(1);
-      let html = `<h2>👋 Welcome, ${roleLabel}</h2>`;
-      html += `<p style="color:var(--text-muted); margin-bottom:12px;">Zaka District Schools Hub — works fully offline. Connect only when sending via WhatsApp or downloading files.</p>`;
+      const roleLabel = role === 'admin' ? 'School Leader' : role.charAt(0).toUpperCase() + role.slice(1);
 
-      const allLinks = [
-        { icon: '📝', label: 'Teacher AI Copilot', fn: 'renderTeacherMode', roles: ['teacher'] },
-        { icon: '📖', label: 'Learner Portal', fn: 'renderLearnerMode', roles: ['learner'] },
-        { icon: '📊', label: 'Enrollment', fn: "requirePin('enrollment')", roles: ['admin'] },
-        { icon: '📋', label: 'Forms', fn: "requirePin('forms')", roles: ['teacher','admin'] },
-        { icon: '📝', label: 'Examinations', fn: 'renderExaminations', roles: ['teacher','learner','admin'] },
-        { icon: '🔔', label: 'Notices', fn: 'renderNotices', roles: ['teacher','learner','admin'] }
-      ];
+      // Pinned urgent notices
+      const urgent = content.notices.items.filter(n => n.priority === 'High').slice(0, 2);
+      let urgentHtml = '';
+      if (urgent.length) {
+        urgentHtml = `<div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:12px; margin-bottom:12px;">
+          <p style="font-weight:700; color:#856404; margin-bottom:6px; font-size:0.85rem;">📌 PINNED NOTICES</p>`;
+        urgent.forEach(n => {
+          urgentHtml += `<p style="margin-bottom:4px; font-size:0.85rem; color:#533f03;"><b>${n.subject}</b></p>`;
+          if (n.file) urgentHtml += `<a href="${n.file}" download style="font-size:0.8rem; color:#0f3d2e;">⬇️ Download</a>`;
+        });
+        urgentHtml += `</div>`;
+      }
 
-      html += `<h3>Quick Access</h3>`;
-      allLinks.filter(l => l.roles.includes(role)).forEach(l => {
-        html += `<div class="card" style="cursor:pointer;" onclick="${l.fn}()"><h4>${l.icon} ${l.label}</h4></div>`;
+      // Quick service tiles by role
+      const tiles = {
+        teacher: [
+          { icon:'📝', label:'Teacher AI Copilot', sub:'WhatsApp prompt tools', fn:"navTo('learn', document.getElementById('nav-learn')); setTimeout(renderTeacherMode,50)" },
+          { icon:'📋', label:'Forms & Reports', sub:'RBM, Leave, Narratives', fn:"navTo('services', document.getElementById('nav-services'))" },
+          { icon:'📝', label:'Examinations', sub:'Papers & timetables', fn:"navTo('exams', document.getElementById('nav-exams'))" },
+          { icon:'🔔', label:'Notices', sub:'District announcements', fn:"navTo('more', document.getElementById('nav-more')); setTimeout(renderNotices,50)" },
+        ],
+        learner: [
+          { icon:'📚', label:'Learning Centre', sub:'Notes, lessons, quizzes', fn:"navTo('learn', document.getElementById('nav-learn'))" },
+          { icon:'📝', label:'Exam Papers', sub:'Download & prepare', fn:"navTo('exams', document.getElementById('nav-exams'))" },
+          { icon:'🔔', label:'Notices', sub:'School announcements', fn:"navTo('more', document.getElementById('nav-more')); setTimeout(renderNotices,50)" },
+        ],
+        admin: [
+          { icon:'📊', label:'Enrollment Returns', sub:'Submit to District Office', fn:"requirePin('enrollment')" },
+          { icon:'📋', label:'Forms & Reports', sub:'ED46, RBM, Narratives', fn:"navTo('services', document.getElementById('nav-services'))" },
+          { icon:'🗂️', label:'Admin Dashboard', sub:'Saved data & submissions', fn:"renderAdminDashboard()" },
+          { icon:'📝', label:'Examinations', sub:'Papers & timetables', fn:"navTo('exams', document.getElementById('nav-exams'))" },
+          { icon:'🔔', label:'Notices', sub:'District directives', fn:"navTo('more', document.getElementById('nav-more')); setTimeout(renderNotices,50)" },
+          { icon:'🏫', label:'School Directory', sub:'All Zaka schools', fn:"renderDirectory()" },
+        ]
+      };
+
+      const roleTiles = tiles[role] || tiles.teacher;
+      let tilesHtml = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">`;
+      roleTiles.forEach(t => {
+        tilesHtml += `<div class="card" style="cursor:pointer; text-align:center; padding:14px 10px;" onclick="${t.fn}">
+          <div style="font-size:1.8rem;">${t.icon}</div>
+          <div style="font-weight:700; color:#0f3d2e; font-size:0.85rem; margin-top:4px;">${t.label}</div>
+          <div style="font-size:0.73rem; color:#718096; margin-top:2px;">${t.sub}</div>
+        </div>`;
+      });
+      tilesHtml += `</div>`;
+
+      let html = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <h2 style="margin:0; border:none;">👋 ${roleLabel}</h2>
+          <button class="btn btn-secondary" style="font-size:0.75rem; padding:6px 10px; margin:0;" onclick="signOut()">Switch Role</button>
+        </div>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Zaka District Schools Hub • Works offline</p>
+        ${urgentHtml}
+        <h3 style="margin-bottom:8px;">Quick Services</h3>
+        ${tilesHtml}
+      `;
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    // ── SERVICES TAB ──────────────────────────────────────────────────────
+    function renderServicesTab() {
+      const role = getUserRole();
+      let html = `<h2>🛠️ Services</h2>
+        <p style="color:var(--text-muted); margin-bottom:12px; font-size:0.9rem;">School administration, returns, HR and official forms — fill offline, share when ready.</p>`;
+
+      // ED46 Census — always first (flagship form)
+      html += `<div class="card" style="border-left:4px solid #d4af37; cursor:pointer;" onclick="openED46()">
+        <h4>📋 ED46 (B1) Secondary School Census</h4>
+        <p>Annual school census return — School ID, Enrolment, Staff, ICT, Facilities, Health &amp; Finance.</p>
+        <span class="badge badge-success">Annual Return</span>
+        <span style="color:#d4af37; font-weight:700; font-size:0.8rem; margin-left:8px;">🔒 PIN Required</span>
+      </div>`;
+
+      // Enrollment
+      html += `<div class="card" style="cursor:pointer;" onclick="requirePin('enrollment')">
+        <h4>📊 Enrollment Statistics Return</h4>
+        <p>Submit termly enrollment data for your school to the District Office via WhatsApp.</p>
+        <span class="badge badge-success">School Returns</span>
+        <span style="color:#d4af37; font-weight:700; font-size:0.8rem; margin-left:8px;">🔒 PIN Required</span>
+      </div>`;
+
+      // Forms by category
+      const categories = [...new Set(content.forms.availableForms.map(f => f.category))];
+      const catIcons = { 'School Returns':'📄', 'HR':'👤', 'RBM':'⭐', 'Reports':'📑', 'Academic':'📊' };
+      const catDesc = {
+        'School Returns': 'Annex A and school term returns',
+        'HR': 'Leave applications and HR requests',
+        'RBM': 'Performance workplan and appraisal forms',
+        'Reports': 'HOD and Head Teacher narrative reports',
+        'Academic': 'BSPZ statistics and results analysis'
+      };
+
+      categories.forEach(cat => {
+        const forms = content.forms.availableForms.filter(f => f.category === cat);
+        html += `<div class="card" style="cursor:pointer;" onclick="requirePin('forms'); setTimeout(()=>renderFormsByCategory('${cat}'),600)">
+          <h4>${catIcons[cat]||'📋'} ${cat}</h4>
+          <p style="margin-bottom:4px;">${catDesc[cat]||''}</p>
+          <p style="color:#718096; font-size:0.8rem; margin-bottom:0;">${forms.map(f=>f.name).join(' • ')}</p>
+          <span style="color:#d4af37; font-weight:700; font-size:0.8rem;">🔒 PIN Required</span>
+        </div>`;
       });
 
+      // Admin Dashboard link for admins
       if (role === 'admin') {
         html += `<div class="card" style="cursor:pointer; border-left:4px solid #d4af37;" onclick="renderAdminDashboard()">
           <h4>🗂️ Admin Dashboard</h4>
-          <p style="margin-bottom:0;">Enrollment, forms, and exam confirmations saved on this device.</p>
+          <p style="margin-bottom:0;">All submissions, forms, and exam confirmations saved on this device — sorted into folders.</p>
         </div>`;
       }
 
       document.getElementById('app').innerHTML = html;
+    }
+
+    function openED46() {
+      const pin = localStorage.getItem('zaka_device_pin');
+      const stored = localStorage.getItem('zaka_device_pin');
+      openPinModal('verify', 'Verify PIN', 'Enter your PIN to open the ED46 Census form', 'ed46');
+    }
+
+    // ── LEARN TAB ─────────────────────────────────────────────────────────
+    function renderLearnTab() {
+      const role = getUserRole();
+      let html = `<h2>📚 Learning Centre</h2>
+        <p style="color:var(--text-muted); margin-bottom:12px; font-size:0.9rem;">Teaching resources, learner materials and professional tools — all available offline.</p>`;
+
+      if (role !== 'learner') {
+        html += `<div class="card" style="cursor:pointer; border-left:4px solid #d4af37;" onclick="renderTeacherMode()">
+          <h4>📝 Teacher AI Copilot</h4>
+          <p style="margin-bottom:0;">WhatsApp prompt tools for lesson planning, scheme of work generation, assessment design, and subject-specific resources.</p>
+        </div>`;
+      }
+
+      html += `<div class="card" style="cursor:pointer;" onclick="renderLearnerMode()">
+        <h4>📖 Learner Portal</h4>
+        <p style="margin-bottom:0;">Form 1–4 subject notes, worked examples, and practice questions with answers — across all core subjects.</p>
+      </div>`;
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    // ── MORE TAB ──────────────────────────────────────────────────────────
+    function renderMoreTab() {
+      let html = `<h2>☰ More</h2>`;
+
+      html += `<div class="card" style="cursor:pointer;" onclick="renderNotices()">
+        <h4>🔔 District Notices</h4>
+        <p style="margin-bottom:0;">Official announcements, circulars, and directives from the District Schools Office, HR, and ZIMSEC.</p>
+      </div>`;
+
+      html += `<div class="card" style="cursor:pointer;" onclick="renderDirectory()">
+        <h4>🏫 School Directory</h4>
+        <p style="margin-bottom:0;">All secondary and primary schools in Zaka District with EMIS codes.</p>
+      </div>`;
+
+      html += `<div class="card" style="cursor:pointer;" onclick="renderAbout()">
+        <h4>ℹ️ About & Disclaimer</h4>
+        <p style="margin-bottom:0;">About this platform, prototype status, data privacy, and contact information.</p>
+      </div>`;
+
+      html += `<div class="card" style="cursor:pointer; border-left:4px solid #e53e3e;" onclick="signOut()">
+        <h4 style="color:#e53e3e;">🚪 Sign Out / Switch Role</h4>
+        <p style="margin-bottom:0;">Return to the role selection screen.</p>
+      </div>`;
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    // ── ABOUT SCREEN ──────────────────────────────────────────────────────
+    function renderAbout() {
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="renderMoreTab()">← Back</button>
+        <h2>ℹ️ About Zaka District Schools Hub</h2>
+
+        <div class="card" style="border-left:4px solid #d4af37;">
+          <h4>What is this platform?</h4>
+          <p>Zaka District Schools Hub is a digital education, administration and school services platform serving teachers, learners, school leaders and district officers across Zaka District, Masvingo Province, Zimbabwe.</p>
+          <p style="margin-bottom:0;">It works fully offline — all features are available without internet. Internet is only needed to send WhatsApp submissions or download new files.</p>
+        </div>
+
+        <div class="card" style="border-left:4px solid #e53e3e;">
+          <h4>⚠️ Prototype Disclaimer</h4>
+          <p>This is an independently developed pilot prototype, currently under evaluation by Zaka District education stakeholders. It is <b>not yet an official Ministry of Primary and Secondary Education or District Office system.</b></p>
+          <p style="margin-bottom:0;">Data entered into this application is stored only on your device unless you explicitly share it via WhatsApp or another channel. Do not enter sensitive personal data until formal adoption is confirmed.</p>
+        </div>
+
+        <div class="card">
+          <h4>🔒 Data & Privacy</h4>
+          <p>All data you enter stays on your device (browser localStorage). Nothing is automatically sent anywhere. When you submit via WhatsApp, only the data you review and send leaves your device.</p>
+          <p style="margin-bottom:0;">District education data belongs to the authorised institution, not to any personal device or personal account.</p>
+        </div>
+
+        <div class="card">
+          <h4>📖 Open Source</h4>
+          <p style="margin-bottom:0;">This platform is open source under the MIT License. Code repository: github.com/lawchiwara0-droid/zakadistrictschoolshub. Authorship and project leadership: Lawson Chiwara, Danda Secondary School, Zaka District.</p>
+        </div>
+
+        <div class="card">
+          <h4>📞 Contact & Support</h4>
+          <p style="margin-bottom:0;">Project Lead: Lawson Chiwara, Head of Department, Danda Secondary School, Zaka District, Masvingo Province. Available for questions, UAT coordination, and training.</p>
+        </div>`;
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    // ── SCHOOL DIRECTORY ──────────────────────────────────────────────────
+    function renderDirectory() {
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="renderMoreTab()">← Back</button>
+        <h2>🏫 School Directory</h2>
+        <p style="color:var(--text-muted); margin-bottom:12px; font-size:0.9rem;">All schools in Zaka District with EMIS codes.</p>
+
+        <input type="text" id="dirSearch" placeholder="Search school name..." oninput="filterDirectory()" style="margin-bottom:12px;">
+
+        <h3>Secondary Schools (${zakaSchools.secondary.length})</h3>
+        <div id="secondary-list">`;
+
+      zakaSchools.secondary.forEach(s => {
+        html += `<div class="card dir-item" style="padding:10px 14px; margin-bottom:6px;" data-name="${s.name.toLowerCase()}">
+          <strong>${s.name}</strong>
+          <span style="float:right; color:#718096; font-size:0.85rem;">EMIS: ${s.code}</span>
+        </div>`;
+      });
+
+      html += `</div><h3 style="margin-top:16px;">Primary Schools (${zakaSchools.primary.length})</h3>
+        <div id="primary-list">`;
+
+      zakaSchools.primary.forEach(s => {
+        html += `<div class="card dir-item" style="padding:10px 14px; margin-bottom:6px;" data-name="${s.name.toLowerCase()}">
+          <strong>${s.name}</strong>
+          <span style="float:right; color:#718096; font-size:0.85rem;">EMIS: ${s.code}</span>
+        </div>`;
+      });
+
+      html += `</div>`;
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function filterDirectory() {
+      const q = document.getElementById('dirSearch').value.toLowerCase();
+      document.querySelectorAll('.dir-item').forEach(el => {
+        el.style.display = el.getAttribute('data-name').includes(q) ? '' : 'none';
+      });
+    }
+
+    function renderFormsByCategory(category) {
+      renderFormsPortal();
     }
 
     function renderAdminDashboard() {
@@ -1638,7 +1871,7 @@
 
     // Init
     initPIN();
-    renderHome();
+    navTo('home', document.getElementById('nav-home'));
     updateOfflineIndicator();
   </script>
 </body>
