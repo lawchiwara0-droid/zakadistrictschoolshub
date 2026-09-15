@@ -1,117 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Staff Sign In — Zaka District Schools Hub</title>
-<style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
-    background: #0f3d2e;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-  .card {
-    background: #fff;
-    border-radius: 14px;
-    padding: 28px 24px;
-    width: 100%;
-    max-width: 360px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-  }
-  h1 {
-    font-size: 1.3rem;
-    color: #0f3d2e;
-    margin: 0 0 4px;
-    text-align: center;
-  }
-  p.sub {
-    color: #718096;
-    font-size: 0.85rem;
-    text-align: center;
-    margin: 0 0 22px;
-  }
-  label {
-    display: block;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #2d3748;
-    margin-bottom: 6px;
-  }
-  input {
-    width: 100%;
-    padding: 12px;
-    font-size: 1rem;
-    border: 1px solid #cbd5e0;
-    border-radius: 8px;
-    margin-bottom: 16px;
-  }
-  input:focus {
-    outline: none;
-    border-color: #d4af37;
-  }
-  button {
-    width: 100%;
-    padding: 13px;
-    font-size: 1rem;
-    font-weight: 700;
-    background: #d4af37;
-    color: #0f3d2e;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-  button:active { transform: scale(0.98); }
-  button:disabled { opacity: 0.6; }
-  #errorMsg {
-    color: #c53030;
-    font-size: 0.85rem;
-    margin: -8px 0 14px;
-    display: none;
-  }
-  a.back {
-    display: block;
-    text-align: center;
-    margin-top: 18px;
-    color: #718096;
-    font-size: 0.85rem;
-    text-decoration: none;
-  }
-</style>
-</head>
-<body>
-
-<div class="card">
-  <h1>🔒 Staff Sign In</h1>
-  <p class="sub">Zaka District Schools Hub — authorised staff only</p>
-
-  <form id="loginForm">
-    <label for="email">Email</label>
-    <input type="email" id="email" autocomplete="username" required>
-
-    <label for="password">Password</label>
-    <input type="password" id="password" autocomplete="current-password" required>
-
-    <div id="errorMsg"></div>
-
-    <button type="submit" id="submitBtn">Sign In</button>
-  </form>
-
-  <a class="back" href="index.html">← Back to public Hub</a>
-</div>
-
 <script type="module">
   import { auth } from "./js/firebase-config.js";
   import {
     setPersistence,
     browserSessionPersistence,
     signInWithEmailAndPassword
-  } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+  } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 
   const form = document.getElementById('loginForm');
   const errorMsg = document.getElementById('errorMsg');
@@ -127,8 +20,6 @@
     const password = document.getElementById('password').value;
 
     try {
-      // Session tied to this browser tab only — closing the tab ends it.
-      // This matters on shared school-office devices.
       await setPersistence(auth, browserSessionPersistence);
       await signInWithEmailAndPassword(auth, email, password);
       window.location.replace('staff-dashboard.html');
@@ -147,6 +38,43 @@
     }
   });
 </script>
+<script type="module">
+  import { auth } from "./js/firebase-config.js";
+  import {
+    setPersistence,
+    browserSessionPersistence,
+    signInWithEmailAndPassword
+  } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 
-</body>
-</html>
+  const form = document.getElementById('loginForm');
+  const errorMsg = document.getElementById('errorMsg');
+  const submitBtn = document.getElementById('submitBtn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorMsg.style.display = 'none';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in…';
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    try {
+      await setPersistence(auth, browserSessionPersistence);
+      await signInWithEmailAndPassword(auth, email, password);
+      window.location.replace('staff-dashboard.html');
+    } catch (error) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign In';
+      errorMsg.style.display = 'block';
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+        errorMsg.textContent = 'Incorrect email or password.';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMsg.textContent = 'Too many attempts. Please wait and try again.';
+      } else {
+        errorMsg.textContent = 'Sign-in failed. Check your connection and try again.';
+      }
+      console.error('Login error:', error.code, error.message);
+    }
+  });
+</script>
