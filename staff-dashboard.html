@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Dashboard — Zaka District Schools Hub</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+    background: #f7f7f5;
+    min-height: 100vh;
+  }
+  header {
+    background: #0f3d2e;
+    color: #fff;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  header h1 {
+    font-size: 1.05rem;
+    margin: 0;
+  }
+  #signOutBtn {
+    background: transparent;
+    border: 1px solid #d4af37;
+    color: #d4af37;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  main {
+    padding: 20px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+  .card p { margin: 4px 0; color: #4a5568; font-size: 0.9rem; }
+  .card b { color: #0f3d2e; }
+  #loadingScreen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    color: #718096;
+  }
+  #dashboardContent { display: none; }
+</style>
+</head>
+<body>
+
+<div id="loadingScreen">Checking sign-in…</div>
+
+<div id="dashboardContent">
+  <header>
+    <h1>🗂️ Staff Dashboard</h1>
+    <button id="signOutBtn">Sign out</button>
+  </header>
+  <main>
+    <div class="card">
+      <p>Signed in as</p>
+      <p><b id="userEmail">—</b></p>
+    </div>
+    <div class="card">
+      <p>This is a placeholder. Protected features (notices, forms, admin tools) will be added here in the next steps, one at a time.</p>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+  import { auth } from "./js/firebase-config.js";
+  import {
+    onAuthStateChanged,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+  const loadingScreen = document.getElementById('loadingScreen');
+  const dashboardContent = document.getElementById('dashboardContent');
+  const userEmail = document.getElementById('userEmail');
+  const signOutBtn = document.getElementById('signOutBtn');
+
+  // Guard: never show dashboard content before Firebase confirms a signed-in user.
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.replace('login.html');
+      return;
+    }
+    userEmail.textContent = user.email;
+    loadingScreen.style.display = 'none';
+    dashboardContent.style.display = 'block';
+    resetInactivityTimer();
+  });
+
+  signOutBtn.addEventListener('click', async () => {
+    try {
+      await signOut(auth);
+      window.location.replace('login.html');
+    } catch (error) {
+      console.error('Sign-out error:', error.code, error.message);
+    }
+  });
+
+  // 10-minute inactivity auto sign-out (per shared-device requirement).
+  const INACTIVITY_LIMIT = 10 * 60 * 1000;
+  let logoutTimer;
+
+  function resetInactivityTimer() {
+    clearTimeout(logoutTimer);
+    logoutTimer = setTimeout(async () => {
+      await signOut(auth);
+      alert('You were signed out after 10 minutes of inactivity.');
+      window.location.replace('login.html');
+    }, INACTIVITY_LIMIT);
+  }
+
+  ['click', 'touchstart', 'keydown', 'scroll', 'mousemove'].forEach((eventName) => {
+    document.addEventListener(eventName, () => {
+      if (dashboardContent.style.display === 'block') resetInactivityTimer();
+    }, { passive: true });
+  });
+</script>
+
+</body>
+</html>
