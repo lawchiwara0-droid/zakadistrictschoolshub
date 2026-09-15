@@ -1106,6 +1106,7 @@
             localStorage.setItem('zaka_ed46_unlocked_at', Date.now().toString());
             window.open('ed46.html', '_blank');
           }
+          else if (pinVerifyAction === 'admindash') renderAdminDashboard();
         } else {
           alert('❌ Incorrect PIN. Try again.');
           clearPinEntry();
@@ -1293,9 +1294,10 @@
 
       // Admin Dashboard link for admins
       if (role === 'admin') {
-        html += `<div class="card" style="cursor:pointer; border-left:4px solid #d4af37;" onclick="renderAdminDashboard()">
+        html += `<div class="card" style="cursor:pointer; border-left:4px solid #d4af37;" onclick="requirePin('admindash')">
           <h4>🗂️ Admin Dashboard</h4>
           <p style="margin-bottom:0;">All submissions, forms, and exam confirmations saved on this device — sorted into folders.</p>
+          <span style="color:#d4af37; font-weight:700; font-size:0.8rem;">🔒 PIN Required</span>
         </div>`;
       }
 
