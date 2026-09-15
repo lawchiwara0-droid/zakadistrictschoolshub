@@ -1,10 +1,11 @@
-const CACHE_VERSION = 'zaka-hub-v7-portal';
+const CACHE_VERSION = 'zaka-hub-v7-1-ed46-lock';
 const urlsToCache = [
   './',
   './index.html',
   './ed46.html',
   './manifest.webmanifest',
   './icon-192.png',
+  './icon-512.png',
   './dummy_english_4005_01.pdf',
   './dummy_literature_4029_01.pdf',
   './dummy_frs_4047_01.pdf',

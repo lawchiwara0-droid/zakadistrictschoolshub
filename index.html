@@ -1102,7 +1102,10 @@
           document.getElementById('pinModal').classList.remove('show');
           if (pinVerifyAction === 'enrollment') renderEnrollmentMode();
           else if (pinVerifyAction === 'forms') renderFormsPortal();
-          else if (pinVerifyAction === 'ed46') window.open('ed46.html', '_blank');
+          else if (pinVerifyAction === 'ed46') {
+            localStorage.setItem('zaka_ed46_unlocked_at', Date.now().toString());
+            window.open('ed46.html', '_blank');
+          }
         } else {
           alert('❌ Incorrect PIN. Try again.');
           clearPinEntry();
