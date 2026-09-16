@@ -1,39 +1,45 @@
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => {
-          reg.onupdatefound = () => {
-            const installingWorker = reg.installing;
-            if (installingWorker == null) return;
-            installingWorker.onstatechange = () => {
-              if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('New update available for Zaka Hub.');
-              }
-            };
-          };
-        })
-        .catch(err => console.error('ServiceWorker registration failed: ', err));
-    });
+const CACHE_VERSION = 'zaka-hub-v7-3-nav-lock';
+const urlsToCache = [
+  './',
+  './index.html',
+  './ed46.html',
+  './manifest.webmanifest',
+  './icon-192.png',
+  './icon-512.png',
+  './dummy_english_4005_01.pdf',
+  './dummy_literature_4029_01.pdf',
+  './dummy_frs_4047_01.pdf',
+  './zimsec_olevel_timetable_nov2026.pdf',
+  './zimsec_alevel_timetable_nov2026.pdf'
+];
 
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (!refreshing) {
-        refreshing = true;
-        window.location.reload();
-      }
-    });
-  }
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_VERSION).then(cache => {
+      return cache.addAll(urlsToCache).catch(() => {
+        return cache.addAll(urlsToCache.filter(u => !u.includes('.pdf')));
+      });
+    })
+  );
+  self.skipWaiting();
+});
 
-  function updateOfflineIndicator() {
-    const isOnline = navigator.onLine;
-    const badge = document.getElementById('network-status');
-    if (badge) {
-      badge.textContent = isOnline ? 'Online' : 'Offline Mode';
-      badge.className = isOnline ? 'badge badge-success' : 'badge badge-high';
-    }
-  }
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.map(k => k !== CACHE_VERSION ? caches.delete(k) : null)
+    ))
+  );
+  self.clients.claim();
+});
 
-  window.addEventListener('online', updateOfflineIndicator);
-  window.addEventListener('offline', updateOfflineIndicator);
-</script>
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+  event.respondWith(
+    caches.match(event.request).then(r => r || fetch(event.request).catch(() => caches.match('./index.html')))
+  );
+});
+
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
+});

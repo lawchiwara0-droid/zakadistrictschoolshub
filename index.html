@@ -3,61 +3,1848 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zaka District Schools Hub</title>
-  <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#0f3d2e">
+  <title>Zaka District Schools Hub</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #0f3d2e;
+      --secondary: #d4af37;
+      --bg: #f4f6f8;
+      --card-bg: #ffffff;
+      --text: #2d3748;
+      --text-muted: #718096;
+      --danger: #e53e3e;
+      --success: #38a169;
+      --whatsapp: #25D366;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), #1a5c47);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 4px solid var(--secondary);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      letter-spacing: 0.5px;
+    }
+
+    header p {
+      font-size: 0.9rem;
+      color: #cbd5e0;
+      margin-top: 4px;
+    }
+
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+      z-index: 1000;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    nav button {
+      flex: 1;
+      background: none;
+      border: none;
+      padding: 12px 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    nav button.active {
+      color: var(--primary);
+      background-color: #f0f7f4;
+      border-top: 3px solid var(--primary);
+      padding-top: 9px;
+    }
+
+    #app {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 0 16px;
+    }
+
+    h2 {
+      font-size: 1.3rem;
+      color: var(--primary);
+      margin-bottom: 12px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 4px;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      margin-top: 16px;
+      margin-bottom: 8px;
+      color: #4a5568;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      border: 1px solid #e2e8f0;
+    }
+
+    .card h4 {
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    .card p {
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      border-radius: 4px;
+      text-transform: uppercase;
+      margin-left: 8px;
+    }
+    
+    .badge-high {
+      background: #fed7d7;
+      color: var(--danger);
+    }
+
+    .badge-success {
+      background: #c6f6d5;
+      color: var(--success);
+    }
+
+    .badge-whatsapp {
+      background: #dcf8c6;
+      color: var(--whatsapp);
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #4a5568;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #cbd5e0;
+      border-radius: 6px;
+      font-size: 1rem;
+      background-color: #f8fafc;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      background-color: #fff;
+    }
+
+    .btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background-color: #16523e;
+    }
+
+    .btn-secondary {
+      background-color: #edf2f7;
+      color: var(--text);
+      margin-top: 8px;
+    }
+
+    .btn-secondary:hover {
+      background-color: #e2e8f0;
+    }
+
+    .btn-success {
+      background-color: var(--success);
+    }
+
+    .btn-success:hover {
+      background-color: #2f855a;
+    }
+
+    .btn-whatsapp {
+      background-color: var(--whatsapp);
+    }
+
+    .btn-whatsapp:hover {
+      background-color: #128C7E;
+    }
+
+    .btn-danger {
+      background-color: var(--danger);
+    }
+
+    .btn-danger:hover {
+      background-color: #c53030;
+    }
+
+    .sync-queue {
+      background: #fffaf0;
+      border: 1px solid #f6ad55;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 16px;
+    }
+
+    .sync-queue h4 {
+      color: #c05621;
+      margin-bottom: 8px;
+    }
+
+    .sync-item {
+      background: white;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sync-item-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .offline-indicator {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #fed7d7;
+      color: #e53e3e;
+      padding: 8px 12px;
+      text-align: center;
+      font-size: 0.85rem;
+      z-index: 2000;
+      display: none;
+    }
+
+    .offline-indicator.visible {
+      display: block;
+    }
+
+    header { margin-top: 30px; }
+
+    .update-banner {
+      position: fixed;
+      bottom: 70px;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, #d4af37, #e6c200);
+      color: #000;
+      padding: 14px 16px;
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1001;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
+    }
+
+    .update-banner.show { display: flex; }
+
+    .update-banner-text { font-weight: 600; flex: 1; }
+
+    .update-banner button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.85rem;
+      margin-left: 8px;
+    }
+
+    .update-btn { background: #0f3d2e; color: white; }
+    .dismiss-btn { background: rgba(0,0,0,0.1); color: #000; }
+
+    .pin-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.75);
+      z-index: 3000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pin-modal.show { display: flex; }
+
+    .pin-modal-content {
+      background: white;
+      border-radius: 14px;
+      padding: 28px 24px;
+      width: 300px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .pin-modal-content h3 {
+      margin-bottom: 8px;
+      color: #0f3d2e;
+      font-size: 1.2rem;
+    }
+
+    .pin-display {
+      font-size: 2rem;
+      letter-spacing: 12px;
+      margin: 16px 0;
+      color: #0f3d2e;
+      min-height: 48px;
+    }
+
+    .pin-pad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .pin-pad button {
+      padding: 14px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      background: #edf2f7;
+      border: 1px solid #cbd5e0;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .pin-pad button:active { background: #cbd5e0; }
+
+    .pin-actions { display: flex; gap: 8px; }
+    .pin-actions button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1rem; }
+    .pin-clear { background: #edf2f7; color: #2d3748; }
+    .pin-confirm { background: #0f3d2e; color: white; }
+
+    .home-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 20px 40px;
+      min-height: 80vh;
+      justify-content: center;
+    }
+
+    .home-welcome {
+      text-align: center;
+      margin-bottom: 32px;
+      padding: 20px;
+      background: #f0f7f4;
+      border-radius: 12px;
+      width: 100%;
+    }
+
+    .role-btn {
+      width: 100%;
+      max-width: 300px;
+      padding: 20px;
+      background: linear-gradient(135deg, #0f3d2e, #1a5c47);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+      margin-bottom: 14px;
+      transition: transform 0.15s;
+    }
+
+    .role-btn:active { transform: scale(0.97); }
+    .role-btn-icon { font-size: 2.4rem; display: block; margin-bottom: 6px; }
+    .role-btn-sub { font-size: 0.75rem; color: rgba(255,255,255,0.75); margin-top: 4px; display: block; }
+
+    .btn-signout {
+      background: none;
+      border: none;
+      color: #e53e3e;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 12px 4px;
+      flex: 0 0 auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background: #f7fafc;
+      font-weight: 600;
+      color: #4a5568;
+    }
+
+    .stats-card {
+      background: linear-gradient(135deg, var(--primary), #1a5c47);
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .stats-card h4 {
+      font-size: 2rem;
+      margin-bottom: 4px;
+    }
+
+    .stats-card p {
+      font-size: 0.9rem;
+      color: #cbd5e0;
+    }
+
+    .school-select {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+  </style>
 </head>
 <body>
-<script>
-  function autoFillSchoolCode() {
-      const select = document.getElementById('school_select');
-      const selectedOption = select.options[select.selectedIndex];
-      const code = selectedOption ? selectedOption.getAttribute('data-code') : '';
-      const codeInput = document.getElementById('school_code');
-      if (codeInput) {
-        codeInput.value = code || '';
+
+  <div id="offlineIndicator" class="offline-indicator">📡 Offline mode — using cached version</div>
+  <div class="update-banner" id="updateBanner">
+    <span class="update-banner-text">✨ New version available!</span>
+    <div>
+      <button class="dismiss-btn" onclick="dismissUpdate()">Later</button>
+      <button class="update-btn" onclick="applyUpdate()">Update Now</button>
+    </div>
+  </div>
+  <div class="pin-modal" id="pinModal">
+    <div class="pin-modal-content">
+      <h3 id="pinTitle">Set Device PIN</h3>
+      <p id="pinSubtitle" style="color:#718096; font-size:0.85rem; margin-bottom:0;">Create a 4-digit PIN to protect enrollment and official forms</p>
+      <div class="pin-display" id="pinDisplay">____</div>
+      <div class="pin-pad" id="pinPad"></div>
+      <div class="pin-actions">
+        <button class="pin-clear" onclick="clearPinEntry()">Clear</button>
+        <button class="pin-confirm" onclick="submitPinEntry()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <header onclick="goHome()" style="cursor:pointer;" title="Tap to go Home">
+    <div style="display:flex; align-items:center; justify-content:center; gap:14px; max-width:600px; margin:0 auto;">
+      <img src="icon-192.png" alt="Zaka District Schools Hub crest" style="width:60px; height:60px; flex-shrink:0;">
+      <div style="text-align:left;">
+        <h1 style="margin:0;">ZAKA DISTRICT SCHOOLS HUB</h1>
+        <p style="margin:4px 0 0;">Digital Education, Administration &amp; School Services • v7.0</p>
+      </div>
+    </div>
+  </header>
+
+  <main id="app"></main>
+
+  <nav>
+    <button onclick="setActiveNav(this, renderTeacherMode)">📝<br>Teacher</button>
+    <button onclick="setActiveNav(this, renderLearnerMode)">📖<br>Learner</button>
+    <button onclick="setActiveNav(this, renderEnrollmentModeGated)">📊<br>Enrollment</button>
+    <button onclick="setActiveNav(this, renderFormsPortalGated)">📋<br>Forms</button>
+    <button onclick="setActiveNav(this, renderExaminationsGated)">📝<br>Exams</button>
+    <button onclick="setActiveNav(this, renderNotices)">🔔<br>Notices</button>
+    <button class="btn-signout" onclick="signOut()">🚪<br>Out</button>
+  </nav>
+
+  <script>
+    // ZAKA DISTRICT SCHOOLS DATABASE
+    const zakaSchools = {
+      // Source: official 2026 district schools register (Ministry data), Zaka District
+      secondary: [
+        { name: "Chananga Secondary School", code: "11135" },
+        { name: "Charingeno Secondary", code: "10142" },
+        { name: "Chimbwembwe Secondary", code: "10051" },
+        { name: "Chinorumba High School", code: "10085" },
+        { name: "Chinyaradza Secondary School", code: "10139" },
+        { name: "Chipumho Secondary School", code: "11354" },
+        { name: "Chiromo Secondary School", code: "10112" },
+        { name: "Chitonhora Hich School", code: "10472" },
+        { name: "Chivata Secondary", code: "10155" },
+        { name: "Chivingwi High School", code: "10089" },
+        { name: "Danda Secondary School", code: "11198" },
+        { name: "Dekeza High School", code: "10065" },
+        { name: "Dzoro High School", code: "10050" },
+        { name: "Jichidza High School", code: "10009" },
+        { name: "Jinjika Secondary", code: "11197" },
+        { name: "Kwamutevhure Sec School", code: "10921" },
+        { name: "Machingambi Secondary", code: "10520" },
+        { name: "Magura High School", code: "10049" },
+        { name: "Makwau Secondary School", code: "10168" },
+        { name: "Matara Secondary School", code: "10054" },
+        { name: "Muchechetere High School", code: "10113" },
+        { name: "Mukushi Secondary School", code: "11300" },
+        { name: "Murere Secondary Day School", code: "11196" },
+        { name: "Muroyi Secondary School", code: "10124" },
+        { name: "Musenyereki A Secondary School", code: "10118" },
+        { name: "Musenyereki B Secondary", code: "10137" },
+        { name: "Mutimwi High School", code: "10083" },
+        { name: "Mutonhori High School", code: "10461" },
+        { name: "Mutsambwa Secondary", code: "10539" },
+        { name: "Muzinda Secondary School", code: "10154" },
+        { name: "Nemauku Secondary", code: "10156" },
+        { name: "Panganai High School", code: "10117" },
+        { name: "Pecom Academy", code: "11222" },
+        { name: "Pillar Of Hope Christian Academy", code: "11458" },
+        { name: "Rudhanda High School", code: "10819" },
+        { name: "Rusere", code: "10091" },
+        { name: "St Anthony'S High School", code: "10031" },
+        { name: "St James Chivamba Secondary School", code: "10115" },
+        { name: "St. Joseph Tongoona", code: "10048" },
+        { name: "Svingarimwe Secondary School", code: "10143" },
+        { name: "Svuure Secondary School", code: "10116" },
+        { name: "Tapudzai High School", code: "10114" },
+        { name: "Tsiga Secondary School", code: "10512" },
+        { name: "Zaka High School", code: "10087" },
+        { name: "Zibwowa Secondary School", code: "10955" },
+        { name: "Zivavose High School", code: "10044" }
+      ],
+      primary: [
+        { name: "Baramanza", code: "10850" },
+        { name: "Bota Primary", code: "10368" },
+        { name: "Chamburukira Primary School", code: "10080" },
+        { name: "Charingeno Primary", code: "10350" },
+        { name: "Charuka Primary", code: "10363" },
+        { name: "Chida Primary School", code: "10442" },
+        { name: "Chiedza Apostolic Primary", code: "11402" },
+        { name: "Chigwagwa Primary School", code: "10366" },
+        { name: "Chimedza Primary", code: "10324" },
+        { name: "Chinorumba Primary", code: "10343" },
+        { name: "Chinyaradza Primary", code: "10581" },
+        { name: "Chipezeze Primary", code: "10347" },
+        { name: "Chipfunde Primary School", code: "10371" },
+        { name: "Chipfuti Primary", code: "10374" },
+        { name: "Chipinda Primary School", code: "10411" },
+        { name: "Chirara Primary", code: "10335" },
+        { name: "Chiredzi Primary", code: "10707" },
+        { name: "Chiromo Primary", code: "10088" },
+        { name: "Chitende Primary", code: "10669" },
+        { name: "Chiteyo Primary School", code: "10084" },
+        { name: "Chivamba Primary", code: "10597" },
+        { name: "Chivata Primary", code: "10344" },
+        { name: "Chivingwi Primary", code: "10325" },
+        { name: "Dabwa Primary", code: "10361" },
+        { name: "Danda Primray", code: "10585" },
+        { name: "Dekeza Primary", code: "10372" },
+        { name: "Dembedza Primary", code: "10413" },
+        { name: "Goko Primary School", code: "10094" },
+        { name: "Gondo Primary", code: "10851" },
+        { name: "Govere Primary School", code: "10751" },
+        { name: "Govo Primary", code: "10370" },
+        { name: "Gumbire Satelite Primary School", code: "11299" },
+        { name: "Gumbu Primary School", code: "10440" },
+        { name: "Harava Primary", code: "10679" },
+        { name: "Jerera Primary School", code: "11017" },
+        { name: "Kubatana Primary", code: "10845" },
+        { name: "Machiva", code: "10895" },
+        { name: "Madondo Primary", code: "10601" },
+        { name: "Mafuratidze Primary", code: "10328" },
+        { name: "Majuru Primary", code: "10364" },
+        { name: "Makumire Primary", code: "10943" },
+        { name: "Makwau Primary School", code: "10330" },
+        { name: "Mandhloro Primary", code: "10592" },
+        { name: "Manjeru Primary", code: "10586" },
+        { name: "Manokore Primary", code: "10351" },
+        { name: "Manyiri Primary School", code: "10749" },
+        { name: "Mapanje Primary", code: "10407" },
+        { name: "Maraire", code: "10603" },
+        { name: "Mashingaidze Primary School", code: "10331" },
+        { name: "Masvingamashava Primary School", code: "10853" },
+        { name: "Matara Primary", code: "10082" },
+        { name: "Mbuyamaswa Primary", code: "10346" },
+        { name: "Muchechetere Primary", code: "10582" },
+        { name: "Muchokwa Primary School", code: "10358" },
+        { name: "Mudavanhu Primary", code: "10369" },
+        { name: "Mudzara Primary School", code: "10359" },
+        { name: "Mugudubi Primary", code: "10419" },
+        { name: "Mujena Primary School", code: "10666" },
+        { name: "Mukarati Kamurai", code: "10327" },
+        { name: "Mukwirimba Primary", code: "10416" },
+        { name: "Munjanja Primary School", code: "10604" },
+        { name: "Muparuri Primary", code: "10857" },
+        { name: "Murembwa Primary", code: "10336" },
+        { name: "Murerekwa Primary", code: "10337" },
+        { name: "Muroyi Primary School", code: "10656" },
+        { name: "Musarava Primary School", code: "10596" },
+        { name: "Museki Primary", code: "10362" },
+        { name: "Musenyereki Primary", code: "10602" },
+        { name: "Mushaya", code: "10365" },
+        { name: "Mushungwa Primary", code: "10360" },
+        { name: "Mutamba Primary", code: "10356" },
+        { name: "Mutimwi Primary", code: "10339" },
+        { name: "Mutsambwa Primary", code: "10418" },
+        { name: "Muzinda Primary School", code: "10357" },
+        { name: "Muzondidya Primary", code: "10352" },
+        { name: "Nemauku", code: "10341" },
+        { name: "Nhema Primary", code: "10345" },
+        { name: "Njiva Primary", code: "10846" },
+        { name: "Nyakunhuwa Primary School", code: "10342" },
+        { name: "Panganai Primary School", code: "10599" },
+        { name: "Pasipanyoro Primary", code: "10684" },
+        { name: "Royal Kids Ecd Centre", code: "10806" },
+        { name: "Rudhanda Primary", code: "10354" },
+        { name: "Rusere Primary", code: "10355" },
+        { name: "Sally Mugabe Pre School", code: "11440" },
+        { name: "Sazaume Primary School", code: "10831" },
+        { name: "St Anthony'S Central Primary School", code: "10026" },
+        { name: "Svuure Primary School", code: "10598" },
+        { name: "Tapudzai", code: "10593" },
+        { name: "Tovane Primary", code: "10587" },
+        { name: "Vanyoro Primary", code: "10589" },
+        { name: "Veza Primary School", code: "10332" },
+        { name: "Vhudzi Primary", code: "10583" },
+        { name: "Vhurumuku Primary", code: "10367" },
+        { name: "Zaka Primary", code: "10349" },
+        { name: "Zenguvo Primary School", code: "10588" },
+        { name: "Zibwowa Primary", code: "10348" },
+        { name: "Zimhungu Primary School", code: "10584" }
+      ]
+    };
+
+    // DISTRICT OFFICE WHATSAPP NUMBER
+    const DISTRICT_WHATSAPP = "263777212895"; // Temporary: Lawson's number, until the DSI assigns an official contact
+
+    const content = {
+      subjects: [
+        { id: "english", name: "English Language", code: "4005" },
+        { id: "mathematics", name: "Mathematics", code: "4008" },
+        { id: "combined_science", name: "Combined Science", code: "4012" },
+        { id: "frs", name: "Family & Religious Studies", code: "4045" },
+        { id: "shona", name: "Shona", code: "4016" },
+        { id: "literature", name: "Literature in English", code: "4006" },
+        { id: "ndebele", name: "Ndebele", code: "4017" },
+        { id: "geography", name: "Geography", code: "4020" },
+        { id: "history", name: "History", code: "4025" },
+        { id: "economic_history", name: "Economic History", code: "4026" },
+        { id: "heritage", name: "Heritage Studies", code: "4047" },
+        { id: "commerce", name: "Commerce", code: "4030" },
+        { id: "accounts", name: "Accounts", code: "4035" },
+        { id: "economics", name: "Economics", code: "4036" },
+        { id: "business_enterprise", name: "Business & Enterprise", code: "4048" },
+        { id: "agriculture", name: "Agriculture", code: "4040" },
+        { id: "ttd", name: "Textile Technology & Design (TTD)", code: "4063" },
+        { id: "building", name: "Building & Construction", code: "4060" },
+        { id: "woodwork", name: "Woodwork", code: "4061" },
+        { id: "metalwork", name: "Metalwork", code: "4062" },
+        { id: "food_nutrition", name: "Food & Nutrition", code: "4064" },
+        { id: "computer_science", name: "Computer Science", code: "4021" }
+      ],
+      teacher: {
+        title: "Teacher AI Copilot",
+        description: "WhatsApp-ready ZIMSEC syllabus prompt builders for all subjects.",
+        prompts: [
+          { name: "Scheme of Work Generator", text: "Create a Form 3 English Language Scheme of Work for Term 1 based on the current ZIMSEC syllabus focusing on Descriptive Compositions." },
+          { name: "Daily Lesson Plan Builder", text: "Generate a 45-minute lesson plan for Form 1 Comprehension: Skimming and Scanning techniques, including interactive blackboard exercises." },
+          { name: "Mathematics Problem Set", text: "Generate 10 Form 2 Mathematics problems on Algebraic Expressions with step-by-step solutions aligned to ZIMSEC 4008." },
+          { name: "Science Practical Guide", text: "Create a Form 3 Combined Science practical activity on Acids and Bases with safety guidelines and assessment rubric." },
+          { name: "Shona Composition Prompt", text: "Gadzira chirongwa chekudzidzisa Form 2 Shona kunyora nyaya dzetsananguro nematambudziko anowanzo kusangana nevadzidzi." },
+          { name: "Literature Analysis", text: "Create a lesson plan for analysing Zimbabwean poetry in Literature in English, focusing on metaphor, simile, and cultural themes." },
+          { name: "TTD Project Guide", text: "Design a Form 3 Textile Technology & Design practical lesson on pattern drafting and garment construction with assessment criteria." }
+        ]
+      },
+      learner: {
+        title: "Learner Portal",
+        description: "Offline Notes and Practice Tasks for Forms 1-4 (All ZIMSEC Subjects)",
+        forms: {
+          1: { 
+            topics: [
+              { subject: "English", name: "Comprehension", notes: "Identify the main idea, observe tone, and capture contextual meaning.", practice: "Read Chapter 1 text and answer the 5 structured evaluation questions.",
+                detail: {
+                  explanation: "Comprehension is about understanding a passage well enough to answer questions on it accurately. Three skills matter most: (1) Skimming — reading quickly to get the general idea of what a passage is about, before you answer anything. (2) Scanning — running your eye down the passage to find a specific fact, name, or number the question asks for, without reading every word. (3) Close reading — reading a section slowly and carefully when a question asks you to explain, infer, or interpret something, since the answer depends on exact wording, not just the general idea.\n\nWhen you answer, always go back to the passage to check your answer — never rely on memory alone. For 'in your own words' questions, do not copy the exact sentence from the passage; rephrase it, or you may lose marks.",
+                  example: "Read this short passage:\n\n\"Tendai arrived at Mbare Musika before sunrise. The market was already stirring: traders arranging tomatoes into neat pyramids, a woman calling out the price of dried kapenta, the smell of roasting maize drifting between the stalls. By seven o'clock, the narrow paths between stalls were so full that Tendai had to turn sideways to pass.\"\n\nQuestion: What time did the market become crowded?\n\nModel answer: The market became crowded by seven o'clock. (This is a scanning question — the answer is a specific fact stated directly in the passage, so we scan for the number rather than reading the whole passage closely.)\n\nQuestion: Using your own words, explain what the writer means by 'the market was already stirring.'\n\nModel answer: The writer means the market was starting to become busy and active, even though it was still very early. (This is a close-reading question — 'stirring' is not explained directly, so we have to interpret it from how the rest of the sentence describes people setting up and starting their work.)",
+                  questions: [
+                    { q: "What three activities does the passage mention traders or vendors doing?", a: "Arranging tomatoes into pyramids, calling out the price of dried kapenta, and roasting maize." },
+                    { q: "Why did Tendai have to turn sideways to pass through the market?", a: "Because the narrow paths between stalls were so full of people by seven o'clock." },
+                    { q: "Is this passage mainly descriptive, or mainly persuasive? Explain your answer.", a: "It is mainly descriptive — it uses sensory details (sights, sounds, smells) to help the reader picture the scene, rather than trying to convince the reader of an opinion." },
+                    { q: "What time of day does the passage begin?", a: "Before sunrise, i.e. very early morning." }
+                  ]
+                }
+              },
+              { subject: "Mathematics", name: "Number Systems", notes: "Natural numbers, integers, rational and irrational numbers.", practice: "Complete exercises 1-20 on number operations." },
+              { subject: "Combined Science", name: "Living Things", notes: "Characteristics of living organisms, classification basics.", practice: "Draw and label a plant cell." },
+              { subject: "Shona", name: "Kuverenga nokunzwisisa", notes: "Kuverenga ndima uchinzwisisa zvirevo, mashandisirwo emutauro.", practice: "Verenga ndima yekutanga ubvunze mibvunzo yekunzwisisa." },
+              { subject: "Literature in English", name: "Introduction to Literature", notes: "What is literature? Genres: prose, poetry, drama.", practice: "Read a short Zimbabwean poem and identify the theme." },
+              { subject: "Family & Religious Studies", name: "Family Relationships", notes: "Family structures, roles and responsibilities, respect for elders.", practice: "Draw your family tree and describe each member's role.",
+                detail: {
+                  explanation: "A family is the basic unit of society, and families in Zimbabwe take several forms: the nuclear family (parents and their children), the extended family (grandparents, aunts, uncles, and cousins living together or closely connected), the single-parent family, and the child-headed household, where an older child cares for younger siblings, often after the loss of parents.\n\nEach family member typically carries responsibilities appropriate to their role: parents and guardians provide for, guide, and protect children; children are expected to help within their ability and to learn from older family members; grandparents often pass down cultural knowledge and values.\n\nRespect for elders (kuremekedza vakuru) is a core value in Zimbabwean culture, connected to the wider idea of hunhu/ubuntu — the belief that a person becomes fully human through their relationships and conduct towards others. Respect is shown through greetings, listening without interrupting, following guidance, and helping without being asked.",
+                  example: "Consider this scenario: Rudo lives with her parents, her younger brother, and her grandmother, who moved in after her grandfather passed away. Every evening, Rudo helps her grandmother prepare vegetables while her grandmother tells her stories about her own childhood. Rudo's parents work in town, so her grandmother also helps supervise homework in the evenings.\n\nThis shows an extended family structure, and illustrates two roles at once: Rudo's grandmother contributes practical support (childcare, supervision) and passes down cultural knowledge (storytelling), while Rudo shows respect and responsibility by assisting without being asked.",
+                  questions: [
+                    { q: "Name three types of family structure found in Zimbabwe.", a: "Nuclear family, extended family, and single-parent family (child-headed household is also acceptable)." },
+                    { q: "In the scenario, what role does Rudo's grandmother play in the family besides childcare?", a: "She passes down cultural knowledge and values through storytelling." },
+                    { q: "Give two ways a young person can show respect to an elder in daily life.", a: "Examples include: greeting elders properly, listening without interrupting, helping without being asked, and following their guidance." },
+                    { q: "Why might a family become a child-headed household?", a: "Typically after the loss of both parents or guardians, leaving an older child to care for younger siblings." }
+                  ]
+                }
+              },
+              { subject: "Heritage Studies", name: "Introduction to Heritage", notes: "What is heritage? Natural vs cultural heritage, importance of preservation.", practice: "List 5 cultural heritage sites in Zimbabwe and their significance." },
+              { subject: "Textile Technology & Design (TTD)", name: "Textile Fibres & Fabrics", notes: "Natural and synthetic fibres, fabric construction methods (weaving, knitting), fabric properties.", practice: "Collect and identify 10 different fabric samples, classify by fibre type." },
+              { subject: "Building & Construction", name: "Building Materials", notes: "Bricks, cement, sand, aggregates - properties and uses.", practice: "Identify and describe 10 building materials used in your community." }
+            ] 
+          },
+          2: { 
+            topics: [
+              { subject: "English", name: "Language Structure", notes: "Parts of speech mastery, focus on tense consistency.", practice: "Correct the 10 sentence-error fragments provided in the worksheet." },
+              { subject: "Mathematics", name: "Algebra", notes: "Algebraic expressions, simplification, factorisation.", practice: "Simplify 15 algebraic expressions." },
+              { subject: "Geography", name: "Weather and Climate", notes: "Weather elements, instruments, Zimbabwe's climate.", practice: "Record daily weather data for 7 days." },
+              { subject: "Shona", name: "Mutauro (Grammar)", notes: "Chikamu chetari, zita, chiito, zvirevo.", practice: "Tsiva zvikamu zvetaura muzviratidzo gumi." },
+              { subject: "Literature in English", name: "Poetry Analysis", notes: "Figurative language: metaphor, simile, personification.", practice: "Analyse 2 poems identifying literary devices used." },
+              { subject: "Family & Religious Studies", name: "Religious Festivals", notes: "Major religious celebrations in Zimbabwe: Christmas, Easter, Eid, Passover.", practice: "Compare how two different religions celebrate their major festival." },
+              { subject: "Heritage Studies", name: "Great Zimbabwe Monument", notes: "History, architecture, archaeological significance, UNESCO World Heritage status.", practice: "Write an essay on why Great Zimbabwe is important to national identity." },
+              { subject: "Textile Technology & Design (TTD)", name: "Sewing Equipment & Safety", notes: "Sewing machine parts, operation, maintenance, workshop safety rules.", practice: "Practice threading a sewing machine and sew straight seams on fabric samples." },
+              { subject: "Building & Construction", name: "Site Preparation", notes: "Clearing, setting out, foundations, excavation techniques.", practice: "Draw a site plan showing foundation layout for a 2-room house." }
+            ] 
+          },
+          3: { 
+            topics: [
+              { subject: "English", name: "Paper 1 Composition", notes: "Narrative & Descriptive structures. Planning hooks.", practice: "Write a 350-word composition titled: 'The day our school won the sports shield'." },
+              { subject: "Commerce", name: "Trade", notes: "Domestic and foreign trade, balance of payments.", practice: "Essay: 'The role of trade in Zimbabwe's economy'." },
+              { subject: "Agriculture", name: "Crop Production", notes: "Land preparation, planting methods, crop rotation.", practice: "Design a crop rotation plan for a 1-hectare farm." },
+              { subject: "Shona", name: "Kunyora (Composition)", notes: "Kunyora nyaya, tsananguro, zvinyorwa zvehofisi.", practice: "Nyora nyaya inonzi 'Zvakaitika paMhemberero yechikoro'." },
+              { subject: "Literature in English", name: "Drama & Prose", notes: "Plot, characterisation, setting, themes in Zimbabwean texts.", practice: "Read a short story and write character analysis." },
+              { subject: "Family & Religious Studies", name: "Life Rites & Ceremonies", notes: "Birth, initiation, marriage, death rituals across cultures and religions.", practice: "Interview an elder about traditional marriage ceremonies in your culture." },
+              { subject: "Heritage Studies", name: "Indigenous Knowledge Systems", notes: "Traditional medicine, farming methods, weather prediction, storytelling.", practice: "Document 3 indigenous practices from your community and explain their value." },
+              { subject: "Textile Technology & Design (TTD)", name: "Pattern Drafting & Garment Construction", notes: "Body measurements, pattern blocks, cutting layout, assembly techniques, fitting adjustments.", practice: "Take body measurements, draft a skirt pattern, and construct a simple garment." },
+              { subject: "Building & Construction", name: "Brickwork & Masonry", notes: "Brick bonds, mortar mixing, laying techniques, damp proof courses.", practice: "Build a small brick wall model showing stretcher bond pattern." }
+            ] 
+          },
+          4: { 
+            topics: [
+              { subject: "English", name: "ZIMSEC Exam Prep", notes: "Time management allocations: Spend 45 minutes on section A, 45 minutes on Section B.", practice: "Complete the full mock assessment block Paper 1 2024 under strict timing." },
+              { subject: "Mathematics", name: "Calculus Intro", notes: "Differentiation basics, gradients, rates of change.", practice: "Solve 20 differentiation problems." },
+              { subject: "History", name: "Colonialism in Zimbabwe", notes: "BSAC rule, colonial policies, resistance movements.", practice: "Essay: 'Evaluate the impact of colonialism on Zimbabwe'." },
+              { subject: "Shona", name: "ZIMSEC Exam Prep", notes: "Mibvunzo yepaper 1 ne2, kugadzirira bvunzo dzeO-Level.", practice: "Pindura mibvunzo yebvunzo dze2024 Shona Paper 1." },
+              { subject: "Literature in English", name: "ZIMSEC Exam Preparation", notes: "Analysing unseen poetry, essay writing on set texts.", practice: "Write essay on prescribed novel under timed conditions." },
+              { subject: "Family & Religious Studies", name: "Ethics & Moral Values", notes: "Right vs wrong, decision-making, peer pressure, substance abuse prevention.", practice: "Case study: 'How would you handle peer pressure to use drugs?'" },
+              { subject: "Heritage Studies", name: "Heritage & National Development", notes: "Tourism, economic value, preservation challenges, community involvement.", practice: "Propose a community project to preserve a local heritage site." },
+              { subject: "Textile Technology & Design (TTD)", name: "Fashion Design & Entrepreneurship", notes: "Design principles, fashion illustration, costing, marketing, business planning for textile ventures.", practice: "Create a fashion design portfolio and write a business plan for a tailoring/dressmaking business." },
+              { subject: "Building & Construction", name: "Roofing & Finishes", notes: "Roof trusses, covering materials, plastering, painting, tiling.", practice: "Calculate materials needed to roof a 6m x 4m building." }
+            ] 
+          }
+        }
+      },
+      forms: {
+        title: "Administrative & RBM Forms",
+        description: "Fill and store school operational records, RBM appraisals, and narrative reports completely offline.",
+        availableForms: [
+          { id: "annex_a", name: "Annex A - Termly School Returns", category: "School Returns", fields: [
+            { label: "School Name", type: "text", id: "school_name" },
+            { label: "School Code (EMIS)", type: "text", id: "school_code" },
+            { label: "District", type: "select", options: ["Zaka", "Chiredzi", "Masvingo", "Gutu", "Mwenezi"], id: "district" },
+            { label: "Term", type: "select", options: ["Term 1", "Term 2", "Term 3"], id: "term" },
+            { label: "Year", type: "number", id: "year" },
+            { label: "Total Learners Enrolled (Secondary)", type: "number", id: "total_learners" },
+            { label: "Form 1 Enrollment", type: "number", id: "form1" },
+            { label: "Form 2 Enrollment", type: "number", id: "form2" },
+            { label: "Form 3 Enrollment", type: "number", id: "form3" },
+            { label: "Form 4 Enrollment", type: "number", id: "form4" },
+            { label: "Boys", type: "number", id: "boys" },
+            { label: "Girls", type: "number", id: "girls" },
+            { label: "New Admissions (Term)", type: "number", id: "admissions" },
+            { label: "Transfers Out", type: "number", id: "transfers_out" },
+            { label: "Dropouts (Term)", type: "number", id: "dropouts" },
+            { label: "Total Teaching Staff", type: "number", id: "teaching_staff" },
+            { label: "Teacher Vacancies", type: "number", id: "vacancies" },
+            { label: "Head Teacher Name", type: "text", id: "head_name" },
+            { label: "Date of Submission", type: "date", id: "submit_date" }
+          ]},
+          { id: "hr_leave", name: "Official Leave Application", category: "HR", fields: [
+            { label: "Teacher Name", type: "text", id: "teacher_name" },
+            { label: "EC Number", type: "text", id: "ec_number" },
+            { label: "School", type: "text", id: "school" },
+            { label: "Type of Leave Requested", type: "select", options: ["Sick Leave", "Urgent Private Affairs", "Annual Leave", "Maternity Leave", "Paternity Leave"], id: "leave_type" },
+            { label: "Commencement Date", type: "date", id: "start_date" },
+            { label: "Return Date", type: "date", id: "return_date" },
+            { label: "Reason for Leave", type: "textarea", id: "reason" }
+          ]},
+          { id: "bspz_stats", name: "BSPZ Academic Statistics", category: "Academic", fields: [
+            { label: "Reporting Month", type: "month", id: "report_month" },
+            { label: "School Name", type: "text", id: "school_name" },
+            { label: "Form 4 Sitting Enrollment", type: "number", id: "form4_sitting" },
+            { label: "Form 4 Actual Sitting", type: "number", id: "form4_actual" },
+            { label: "Pass Rate (%)", type: "number", id: "pass_rate" }
+          ]},
+          { id: "rbm_appraisal", name: "RBM Performance Appraisal (Teacher)", category: "RBM", fields: [
+            { label: "Teacher Name", type: "text", id: "teacher_name" },
+            { label: "EC Number", type: "text", id: "ec_number" },
+            { label: "School", type: "text", id: "school" },
+            { label: "Position", type: "select", options: ["Teacher", "Senior Teacher", "Head of Department", "Deputy Head", "Head"], id: "position" },
+            { label: "Performance Period From", type: "date", id: "period_from" },
+            { label: "Performance Period To", type: "date", id: "period_to" },
+            { label: "Key Output 1 (Description)", type: "text", id: "output1" },
+            { label: "Target 1", type: "text", id: "target1" },
+            { label: "Actual Performance 1", type: "text", id: "actual1" },
+            { label: "Rating 1 (1-4)", type: "select", options: ["1", "2", "3", "4"], id: "rating1" },
+            { label: "Key Output 2 (Description)", type: "text", id: "output2" },
+            { label: "Target 2", type: "text", id: "target2" },
+            { label: "Actual Performance 2", type: "text", id: "actual2" },
+            { label: "Rating 2 (1-4)", type: "select", options: ["1", "2", "3", "4"], id: "rating2" },
+            { label: "Key Output 3 (Description)", type: "text", id: "output3" },
+            { label: "Target 3", type: "text", id: "target3" },
+            { label: "Actual Performance 3", type: "text", id: "actual3" },
+            { label: "Rating 3 (1-4)", type: "select", options: ["1", "2", "3", "4"], id: "rating3" },
+            { label: "Total Score (Sum of Ratings)", type: "number", id: "total_score" },
+            { label: "Overall Rating", type: "select", options: ["Unsatisfactory", "Requires Improvement", "Satisfactory", "Very Good", "Excellent"], id: "overall_rating" },
+            { label: "Appraiser Comments", type: "textarea", id: "appraiser_comments" },
+            { label: "Appraisee Comments", type: "textarea", id: "appraisee_comments" }
+          ]},
+          { id: "hod_narrative", name: "HOD Termly Narrative Report", category: "Reports", fields: [
+            { label: "HOD Name", type: "text", id: "hod_name" },
+            { label: "Department", type: "select", options: ["English", "Mathematics", "Sciences", "Humanities", "Commercial", "Practical", "Languages"], id: "department" },
+            { label: "School", type: "text", id: "school" },
+            { label: "Term", type: "select", options: ["Term 1", "Term 2", "Term 3"], id: "term" },
+            { label: "Year", type: "number", id: "year" },
+            { label: "Teaching & Learning Activities", type: "textarea", id: "teaching_activities" },
+            { label: "Supervision Conducted (Number of Teachers)", type: "number", id: "supervision_count" },
+            { label: "Key Strengths Observed", type: "textarea", id: "strengths" },
+            { label: "Areas for Improvement", type: "textarea", id: "improvements" },
+            { label: "Resource Challenges", type: "textarea", id: "challenges" },
+            { label: "Recommendations", type: "textarea", id: "recommendations" }
+          ]},
+          { id: "head_narrative", name: "Head Teacher Termly Narrative Report", category: "Reports", fields: [
+            { label: "Head Teacher Name", type: "text", id: "head_name" },
+            { label: "School", type: "text", id: "school" },
+            { label: "Term", type: "select", options: ["Term 1", "Term 2", "Term 3"], id: "term" },
+            { label: "Year", type: "number", id: "year" },
+            { label: "Enrollment Overview", type: "textarea", id: "enrollment" },
+            { label: "Staffing Overview", type: "textarea", id: "staffing" },
+            { label: "Academic Performance Summary", type: "textarea", id: "academic" },
+            { label: "Infrastructure & Resources", type: "textarea", id: "infrastructure" },
+            { label: "Major Challenges", type: "textarea", id: "challenges" },
+            { label: "Support Needed from District", type: "textarea", id: "support_needed" }
+          ]},
+          { id: "results_analysis", name: "ZIMSEC Results Analysis (Post-Results)", category: "Academic", fields: [
+            { label: "School Name", type: "text", id: "ra_school_name" },
+            { label: "Centre Number", type: "text", id: "ra_centre_no" },
+            { label: "Examination Level", type: "select", options: ["O-Level", "A-Level"], id: "ra_level" },
+            { label: "Examination Session", type: "select", options: ["June", "November"], id: "ra_session" },
+            { label: "Examination Year", type: "number", id: "ra_year" },
+            { label: "Subject", type: "text", id: "ra_subject" },
+            { label: "Subject Code", type: "text", id: "ra_subject_code" },
+            { label: "Subject Teacher(s)", type: "text", id: "ra_teacher" },
+            { label: "Head of Department", type: "text", id: "ra_hod" },
+            { label: "Number Registered", type: "number", id: "ra_registered" },
+            { label: "Number Who Sat", type: "number", id: "ra_sat" },
+            { label: "Number Absent", type: "number", id: "ra_absent" },
+            { label: "Grade A", type: "number", id: "ra_grade_a" },
+            { label: "Grade B", type: "number", id: "ra_grade_b" },
+            { label: "Grade C", type: "number", id: "ra_grade_c" },
+            { label: "Grade D", type: "number", id: "ra_grade_d" },
+            { label: "Grade E", type: "number", id: "ra_grade_e" },
+            { label: "Grade U / Ungraded", type: "number", id: "ra_grade_u" },
+            { label: "A-C Pass Rate (%)", type: "number", id: "ra_pass_rate" },
+            { label: "Previous Session A-C Pass Rate (%)", type: "number", id: "ra_prev_pass_rate" },
+            { label: "Main Achievement", type: "textarea", id: "ra_achievement" },
+            { label: "Biggest Concern", type: "textarea", id: "ra_concern" },
+            { label: "Learner Groups Requiring Support", type: "textarea", id: "ra_support_groups" },
+            { label: "Likely Contributing Factors", type: "textarea", id: "ra_factors" },
+            { label: "Improvement Plan (interventions, responsible persons, timeline)", type: "textarea", id: "ra_improvement_plan" },
+            { label: "Date of Analysis", type: "date", id: "ra_date" }
+          ]}
+        ]
+      },
+      examinations: {
+        title: "District Examinations",
+        description: "Official district-set papers, available to every school the moment they're published — no relying on relay chains between schools.",
+        papers: [
+          { id: "exam_001", form: "Form 2", subject: "English Language", term: "Term 3", year: "2026", file: "form2_english_term3_2026.pdf" },
+          { id: "exam_002", form: "Form 4", subject: "English Language", term: "Term 3", year: "2026", file: "form4_english_term3_2026.pdf" },
+          { id: "exam_003", form: "Form 2", subject: "Mathematics", term: "Term 3", year: "2026", file: "form2_maths_term3_2026.pdf" },
+          { id: "zimsec_english_4005_01", form: "Form 4", subject: "English Language", code: "4005/01", term: "November", year: "2026", file: "dummy_english_4005_01.pdf" },
+          { id: "zimsec_literature_4029_01", form: "Form 4", subject: "Literature in English", code: "4029/01", term: "November", year: "2026", file: "dummy_literature_4029_01.pdf" },
+          { id: "zimsec_frs_4047_01", form: "Form 4", subject: "Family & Religious Studies", code: "4047/01", term: "November", year: "2026", file: "dummy_frs_4047_01.pdf" }
+        ]
+      },
+      notices: {
+        title: "Official District Notices", 
+        description: "Directives from District Schools Office, HR, and BSPZ.",
+        items: [
+          { id: "notice_zimsec_olevel", date: "2026-09-13", from: "ZIMSEC", subject: "ZGCE Ordinary Level Examination Timetable — Nov/Dec 2026", summary: "Official O-Level timetable for the November/December 2026 session. Practical sessions begin 14 September 2026; written papers run from 12 October through 23 November 2026. English Language: 12-13 October. Results published third week of January 2027.", priority: "High", file: "zimsec_olevel_timetable_nov2026.pdf" },
+          { id: "notice_zimsec_alevel", date: "2026-05-13", from: "ZIMSEC", subject: "ZGCE Advanced Level Examination Timetable — Nov/Dec 2026 Session", summary: "Full paper-by-paper timetable for the November/December 2026 A-Level examinations. Practical/planning sessions begin 14 September 2026; written papers run from 13 October through 20 November 2026. Results are published within the second week of January 2027 (A-Level) and third week of January 2027 (O-Level). Queries: +263 242 304 119 or WhatsApp 0782 745 768. Malpractice hotlines: 0800 4100 / 0716 800 189 / 0800 4461 / 0773 220 220.", priority: "High", file: "zimsec_alevel_timetable_nov2026.pdf" },
+          { id: "notice_000", date: "2026-09-09", from: "District Schools Office", subject: "Term 3 District Examinations Now Available", summary: "Term 3 District Examination papers are now published in the Exams tab. Every school can download directly and confirm receipt — no need to wait on relay from other schools or offices.", priority: "High" },
+          { id: "notice_001", date: "2025-09-01", from: "District Schools Office", subject: "Submission Deadline: Term 3 Annex A", summary: "Please ensure all data sets are compiled by 20 September 2025. Offline queues via this portal will automatically sync.", priority: "High" },
+          { id: "notice_002", date: "2025-09-05", from: "BSPZ Coordinator", subject: "Form 4 Mock Examination Registration", summary: "All schools must submit Form 4 candidate lists by 15 September 2025. Use the Enrollment Tab to submit.", priority: "High" },
+          { id: "notice_003", date: "2025-09-10", from: "HR Department", subject: "RBM Appraisal Cycle 2025", summary: "Mid-year RBM appraisals must be completed by 30 September 2025. Submit via Forms Portal.", priority: "Medium" },
+          { id: "notice_004", date: "2025-09-15", from: "District Schools Office", subject: "Head Teachers Meeting", summary: "All Head Teachers to attend quarterly meeting on 25 September 2025 at District Office.", priority: "Medium" }
+        ]
+      }
+    };
+
+    // Auto-update service worker
+    let waitingSW = null;
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(reg => {
+        reg.update();
+        reg.addEventListener('updatefound', () => {
+          const nw = reg.installing;
+          nw.addEventListener('statechange', () => {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+              waitingSW = nw;
+              document.getElementById('updateBanner').classList.add('show');
+            }
+          });
+        });
+      }).catch(err => console.error('SW failed:', err));
+
+      window.addEventListener('online', () => {
+        if (navigator.serviceWorker.controller) {
+          navigator.serviceWorker.getRegistration().then(reg => { if (reg) reg.update(); });
+        }
+      });
+
+      navigator.serviceWorker.addEventListener('message', e => {
+        if (e.data && e.data.type === 'UPDATE_AVAILABLE') {
+          document.getElementById('updateBanner').classList.add('show');
+        }
+      });
+    }
+
+    function dismissUpdate() {
+      document.getElementById('updateBanner').classList.remove('show');
+    }
+
+    function applyUpdate() {
+      if (waitingSW) {
+        waitingSW.postMessage({ type: 'SKIP_WAITING' });
+        setTimeout(() => window.location.reload(), 500);
       }
     }
 
-    function submitEnrollment(e) {
-      e.preventDefault();
-      const schoolName = document.getElementById('school_select').value;
-      const schoolCode = document.getElementById('school_code').value;
-      const term = document.getElementById('term').value;
-      const year = document.getElementById('year').value;
-      const total = document.getElementById('total_learners').value;
-      const boys = document.getElementById('boys').value;
-      const girls = document.getElementById('girls').value;
-      const f1 = document.getElementById('form1').value;
-      const f2 = document.getElementById('form2').value;
-      const f3 = document.getElementById('form3').value;
-      const f4 = document.getElementById('form4').value;
+    function updateOfflineIndicator() {
+      const indicator = document.getElementById('offlineIndicator');
+      if (!navigator.onLine) indicator.classList.add('visible');
+      else indicator.classList.remove('visible');
+    }
 
-      const data = {
-        school_name: schoolName,
-        school_code: schoolCode,
-        term: term,
-        year: year,
-        total_learners: total,
-        boys: boys,
-        girls: girls,
-        form1: f1,
-        form2: f2,
-        form3: f3,
-        form4: f4
+    window.addEventListener('online', updateOfflineIndicator);
+    window.addEventListener('offline', updateOfflineIndicator);
+
+    const STORAGE_KEY = 'zaka_hub_submissions';
+    const ENROLLMENT_KEY = 'zaka_enrollment_data';
+
+    function getSubmissions() {
+      const data = localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : [];
+    }
+
+    function saveSubmission(formId, formData) {
+      const submissions = getSubmissions();
+      const newSubmission = { id: Date.now().toString(), formId, formData, timestamp: new Date().toISOString(), synced: false };
+      submissions.push(newSubmission);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(submissions));
+      return newSubmission;
+    }
+
+    function deleteSubmission(submissionId) {
+      let submissions = getSubmissions();
+      submissions = submissions.filter(s => s.id !== submissionId);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(submissions));
+    }
+
+    function saveEnrollmentData(data) {
+      const enrollments = localStorage.getItem(ENROLLMENT_KEY) ? JSON.parse(localStorage.getItem(ENROLLMENT_KEY)) : [];
+      enrollments.push({ ...data, id: Date.now().toString(), timestamp: new Date().toISOString() });
+      localStorage.setItem(ENROLLMENT_KEY, JSON.stringify(enrollments));
+    }
+
+    function getEnrollmentData() {
+      const data = localStorage.getItem(ENROLLMENT_KEY);
+      return data ? JSON.parse(data) : [];
+    }
+
+    // PIN SECURITY SYSTEM
+    const ROLE_KEY = 'zaka_user_role';
+    const PIN_KEY = 'zaka_device_pin';
+    let pinBuffer = '';
+    let pinMode = 'setup'; // 'setup' or 'verify'
+    let pinVerifyAction = null;
+
+    function getUserRole() { return localStorage.getItem(ROLE_KEY) || ''; }
+    function setUserRole(role) { localStorage.setItem(ROLE_KEY, role); }
+
+    function initPIN() {
+      const stored = localStorage.getItem(PIN_KEY);
+      if (!stored) {
+        openPinModal('setup', 'Set Device PIN', 'Create a 4-digit PIN to protect Enrollment and Forms');
+      }
+    }
+
+    function openPinModal(mode, title, subtitle, action) {
+      pinMode = mode;
+      pinVerifyAction = action || null;
+      pinBuffer = '';
+      document.getElementById('pinTitle').textContent = title;
+      document.getElementById('pinSubtitle').textContent = subtitle;
+      updatePinDisplay();
+      buildPinPad();
+      document.getElementById('pinModal').classList.add('show');
+    }
+
+    function buildPinPad() {
+      const pad = document.getElementById('pinPad');
+      pad.innerHTML = '';
+      for (let i = 1; i <= 9; i++) {
+        const b = document.createElement('button');
+        b.textContent = i;
+        b.onclick = () => addPinDigit(String(i));
+        pad.appendChild(b);
+      }
+      const b0 = document.createElement('button');
+      b0.textContent = '0';
+      b0.style.gridColumn = '2';
+      b0.onclick = () => addPinDigit('0');
+      pad.appendChild(b0);
+    }
+
+    function addPinDigit(d) {
+      if (pinBuffer.length < 4) {
+        pinBuffer += d;
+        updatePinDisplay();
+      }
+    }
+
+    function updatePinDisplay() {
+      const dots = '●'.repeat(pinBuffer.length) + '_'.repeat(4 - pinBuffer.length);
+      document.getElementById('pinDisplay').textContent = dots;
+    }
+
+    function clearPinEntry() {
+      pinBuffer = '';
+      updatePinDisplay();
+    }
+
+    function submitPinEntry() {
+      if (pinBuffer.length !== 4) { alert('Please enter all 4 digits.'); return; }
+      if (pinMode === 'setup') {
+        localStorage.setItem(PIN_KEY, pinBuffer);
+        document.getElementById('pinModal').classList.remove('show');
+        renderHome();
+      } else if (pinMode === 'verify') {
+        const stored = localStorage.getItem(PIN_KEY);
+        if (pinBuffer === stored) {
+          document.getElementById('pinModal').classList.remove('show');
+          if (pinVerifyAction === 'enrollment') renderEnrollmentMode();
+          else if (pinVerifyAction === 'forms') renderFormsPortal();
+          else if (pinVerifyAction === 'exams') renderExaminations();
+          else if (pinVerifyAction === 'ed46') {
+            localStorage.setItem('zaka_ed46_unlocked_at', Date.now().toString());
+            window.open('ed46.html', '_blank');
+          }
+          else if (pinVerifyAction === 'admindash') renderAdminDashboard();
+        } else {
+          alert('❌ Incorrect PIN. Try again.');
+          clearPinEntry();
+        }
+      }
+    }
+
+    function requirePin(action) {
+      openPinModal('verify', 'Verify PIN', 'Enter your 4-digit PIN to access this area', action);
+    }
+
+    // ── NAVIGATION ────────────────────────────────────────────────────────
+    function navTo(tab, btn) {
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      window.scrollTo(0, 0);
+      if (tab === 'home')     renderHome();
+      else if (tab === 'services') renderServicesTab();
+      else if (tab === 'learn')    renderLearnTab();
+      else if (tab === 'exams')    requirePin('exams');
+      else if (tab === 'more')     renderMoreTab();
+    }
+
+    function setActiveNav(button, renderFunc) {
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      if (button) button.classList.add('active');
+      renderFunc();
+    }
+
+    function goHome() {
+      navTo('home', document.getElementById('nav-home'));
+    }
+
+    function signOut() {
+      localStorage.removeItem(ROLE_KEY);
+      navTo('home', document.getElementById('nav-home'));
+      window.scrollTo(0, 0);
+    }
+
+    function selectRole(role) {
+      setUserRole(role);
+      renderHome();
+    }
+
+    // ── HOME TAB ──────────────────────────────────────────────────────────
+    function renderHome() {
+      const role = getUserRole();
+
+      if (!role) {
+        let html = `<div class="home-screen">
+          <div class="home-welcome">
+            <div style="font-size:2.5rem; margin-bottom:8px;">🏫</div>
+            <h2 style="border:none; margin-bottom:4px; color:#0f3d2e; font-size:1.4rem;">Zaka District Schools Hub</h2>
+            <p style="color:#4a5568; margin:0 0 4px; font-size:0.85rem; font-weight:600;">Digital Education, Administration &amp; School Services</p>
+            <p style="color:#718096; margin:0; font-size:0.8rem;">Select your role to continue</p>
+          </div>
+          <button class="role-btn" onclick="selectRole('teacher')">
+            <span class="role-btn-icon">👨‍🏫</span>
+            Teacher
+            <span class="role-btn-sub">AI Copilot • Lesson Planning • Exams • Forms</span>
+          </button>
+          <button class="role-btn" onclick="selectRole('learner')">
+            <span class="role-btn-icon">👨‍🎓</span>
+            Learner
+            <span class="role-btn-sub">Study Notes • Practice Questions • Exam Papers</span>
+          </button>
+          <button class="role-btn" onclick="selectRole('admin')">
+            <span class="role-btn-icon">🏫</span>
+            School Leader
+            <span class="role-btn-sub">Heads • HODs • Inspectors • District Officers</span>
+          </button>
+          <div style="text-align:center; margin-top:20px; padding-top:14px; border-top:1px solid #e2e8f0; width:100%;">
+            <p style="color:#a0aec0; font-size:0.75rem; margin:0;">🔒 PIN protects Enrollment &amp; Forms &nbsp;|&nbsp; Works offline</p>
+          </div>
+        </div>`;
+        document.getElementById('app').innerHTML = html;
+        return;
+      }
+
+      const roleLabel = role === 'admin' ? 'School Leader' : role.charAt(0).toUpperCase() + role.slice(1);
+
+      // Pinned urgent notices
+      const urgent = content.notices.items.filter(n => n.priority === 'High').slice(0, 2);
+      let urgentHtml = '';
+      if (urgent.length) {
+        urgentHtml = `<div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:12px; margin-bottom:12px;">
+          <p style="font-weight:700; color:#856404; margin-bottom:6px; font-size:0.85rem;">📌 PINNED NOTICES</p>`;
+        urgent.forEach(n => {
+          urgentHtml += `<p style="margin-bottom:4px; font-size:0.85rem; color:#533f03;"><b>${n.subject}</b></p>`;
+          if (n.file) urgentHtml += `<a href="${n.file}" download style="font-size:0.8rem; color:#0f3d2e;">⬇️ Download</a>`;
+        });
+        urgentHtml += `</div>`;
+      }
+
+      // Quick service tiles by role
+      const tiles = {
+        teacher: [
+          { icon:'📝', label:'Teacher AI Copilot', sub:'WhatsApp prompt tools', fn:"navTo('learn', document.getElementById('nav-learn')); setTimeout(renderTeacherMode,50)" },
+          { icon:'📋', label:'Forms & Reports', sub:'RBM, Leave, Narratives', fn:"navTo('services', document.getElementById('nav-services'))" },
+          { icon:'📝', label:'Examinations', sub:'Papers & timetables', fn:"navTo('exams', document.getElementById('nav-exams'))" },
+          { icon:'🔔', label:'Notices', sub:'District announcements', fn:"navTo('more', document.getElementById('nav-more')); setTimeout(renderNotices,50)" },
+        ],
+        learner: [
+          { icon:'📚', label:'Learning Centre', sub:'Notes, lessons, quizzes', fn:"navTo('learn', document.getElementById('nav-learn'))" },
+          { icon:'📝', label:'Exam Papers', sub:'Download & prepare', fn:"navTo('exams', document.getElementById('nav-exams'))" },
+          { icon:'🔔', label:'Notices', sub:'School announcements', fn:"navTo('more', document.getElementById('nav-more')); setTimeout(renderNotices,50)" },
+        ],
+        admin: [
+          { icon:'📊', label:'Enrollment Returns', sub:'Submit to District Office', fn:"requirePin('enrollment')" },
+          { icon:'📋', label:'Forms & Reports', sub:'ED46, RBM, Narratives', fn:"navTo('services', document.getElementById('nav-services'))" },
+          { icon:'🗂️', label:'Admin Dashboard', sub:'Saved data & submissions', fn:"renderAdminDashboard()" },
+          { icon:'📝', label:'Examinations', sub:'Papers & timetables', fn:"navTo('exams', document.getElementById('nav-exams'))" },
+          { icon:'🔔', label:'Notices', sub:'District directives', fn:"navTo('more', document.getElementById('nav-more')); setTimeout(renderNotices,50)" },
+          { icon:'🏫', label:'School Directory', sub:'All Zaka schools', fn:"renderDirectory()" },
+        ]
       };
 
-      saveEnrollmentData(data);
+      const roleTiles = tiles[role] || tiles.teacher;
+      let tilesHtml = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">`;
+      roleTiles.forEach(t => {
+        tilesHtml += `<div class="card" style="cursor:pointer; text-align:center; padding:14px 10px;" onclick="${t.fn}">
+          <div style="font-size:1.8rem;">${t.icon}</div>
+          <div style="font-weight:700; color:#0f3d2e; font-size:0.85rem; margin-top:4px;">${t.label}</div>
+          <div style="font-size:0.73rem; color:#718096; margin-top:2px;">${t.sub}</div>
+        </div>`;
+      });
+      tilesHtml += `</div>`;
 
-      const msg = `*ZAKA DISTRICT SCHOOLS HUB - ENROLLMENT RETURN*\n` +
-        `*School:* ${schoolName} (${schoolCode})\n` +
-        `*Period:* ${term} ${year}\n` +
-        `*Total Learners:* ${total} (Boys: ${boys}, Girls: ${girls})\n` +
-        `*Form Breakdown:* Form 1: ${f1} | Form 2: ${f2} | Form 3: ${f3} | Form 4: ${f4}`;
+      let html = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <h2 style="margin:0; border:none;">👋 ${roleLabel}</h2>
+          <button class="btn btn-secondary" style="font-size:0.75rem; padding:6px 10px; margin:0;" onclick="signOut()">Switch Role</button>
+        </div>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Zaka District Schools Hub • Works offline</p>
+        ${urgentHtml}
+        <h3 style="margin-bottom:8px;">Quick Services</h3>
+        ${tilesHtml}
+      `;
 
-      window.open(`https://wa.me/${DISTRICT_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
+      document.getElementById('app').innerHTML = html;
+    }
+
+    // ── SERVICES TAB ──────────────────────────────────────────────────────
+    function renderServicesTab() {
+      const role = getUserRole();
+      let html = `<h2>🛠️ Services</h2>
+        <p style="color:var(--text-muted); margin-bottom:12px; font-size:0.9rem;">School administration, returns, HR and official forms — fill offline, share when ready.</p>`;
+
+      // ED46 Census — always first (flagship form)
+      html += `<div class="card" style="border-left:4px solid #d4af37; cursor:pointer;" onclick="openED46()">
+        <h4>📋 ED46 (B1) Secondary School Census</h4>
+        <p>Annual school census return — School ID, Enrolment, Staff, ICT, Facilities, Health &amp; Finance.</p>
+        <span class="badge badge-success">Annual Return</span>
+        <span style="color:#d4af37; font-weight:700; font-size:0.8rem; margin-left:8px;">🔒 PIN Required</span>
+      </div>`;
+
+      // Enrollment
+      html += `<div class="card" style="cursor:pointer;" onclick="requirePin('enrollment')">
+        <h4>📊 Enrollment Statistics Return</h4>
+        <p>Submit termly enrollment data for your school to the District Office via WhatsApp.</p>
+        <span class="badge badge-success">School Returns</span>
+        <span style="color:#d4af37; font-weight:700; font-size:0.8rem; margin-left:8px;">🔒 PIN Required</span>
+      </div>`;
+
+      // Forms by category
+      const categories = [...new Set(content.forms.availableForms.map(f => f.category))];
+      const catIcons = { 'School Returns':'📄', 'HR':'👤', 'RBM':'⭐', 'Reports':'📑', 'Academic':'📊' };
+      const catDesc = {
+        'School Returns': 'Annex A and school term returns',
+        'HR': 'Leave applications and HR requests',
+        'RBM': 'Performance workplan and appraisal forms',
+        'Reports': 'HOD and Head Teacher narrative reports',
+        'Academic': 'BSPZ statistics and results analysis'
+      };
+
+      categories.forEach(cat => {
+        const forms = content.forms.availableForms.filter(f => f.category === cat);
+        html += `<div class="card" style="cursor:pointer;" onclick="requirePin('forms'); setTimeout(()=>renderFormsByCategory('${cat}'),600)">
+          <h4>${catIcons[cat]||'📋'} ${cat}</h4>
+          <p style="margin-bottom:4px;">${catDesc[cat]||''}</p>
+          <p style="color:#718096; font-size:0.8rem; margin-bottom:0;">${forms.map(f=>f.name).join(' • ')}</p>
+          <span style="color:#d4af37; font-weight:700; font-size:0.8rem;">🔒 PIN Required</span>
+        </div>`;
+      });
+
+      // Admin Dashboard link for admins
+      if (role === 'admin') {
+        html += `<div class="card" style="cursor:pointer; border-left:4px solid #d4af37;" onclick="requirePin('admindash')">
+          <h4>🗂️ Admin Dashboard</h4>
+          <p style="margin-bottom:0;">All submissions, forms, and exam confirmations saved on this device — sorted into folders.</p>
+          <span style="color:#d4af37; font-weight:700; font-size:0.8rem;">🔒 PIN Required</span>
+        </div>`;
+      }
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function openED46() {
+      const pin = localStorage.getItem('zaka_device_pin');
+      const stored = localStorage.getItem('zaka_device_pin');
+      openPinModal('verify', 'Verify PIN', 'Enter your PIN to open the ED46 Census form', 'ed46');
+    }
+
+    // ── LEARN TAB ─────────────────────────────────────────────────────────
+    function renderLearnTab() {
+      const role = getUserRole();
+      let html = `<h2>📚 Learning Centre</h2>
+        <p style="color:var(--text-muted); margin-bottom:12px; font-size:0.9rem;">Teaching resources, learner materials and professional tools — all available offline.</p>`;
+
+      if (role !== 'learner') {
+        html += `<div class="card" style="cursor:pointer; border-left:4px solid #d4af37;" onclick="renderTeacherMode()">
+          <h4>📝 Teacher AI Copilot</h4>
+          <p style="margin-bottom:0;">WhatsApp prompt tools for lesson planning, scheme of work generation, assessment design, and subject-specific resources.</p>
+        </div>`;
+      }
+
+      html += `<div class="card" style="cursor:pointer;" onclick="renderLearnerMode()">
+        <h4>📖 Learner Portal</h4>
+        <p style="margin-bottom:0;">Form 1–4 subject notes, worked examples, and practice questions with answers — across all core subjects.</p>
+      </div>`;
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    // ── MORE TAB ──────────────────────────────────────────────────────────
+    function renderMoreTab() {
+      let html = `<h2>☰ More</h2>`;
+
+      html += `<div class="card" style="cursor:pointer;" onclick="renderNotices()">
+        <h4>🔔 District Notices</h4>
+        <p style="margin-bottom:0;">Official announcements, circulars, and directives from the District Schools Office, HR, and ZIMSEC.</p>
+      </div>`;
+
+      html += `<div class="card" style="cursor:pointer;" onclick="renderDirectory()">
+        <h4>🏫 School Directory</h4>
+        <p style="margin-bottom:0;">All secondary and primary schools in Zaka District with EMIS codes.</p>
+      </div>`;
+
+      html += `<div class="card" style="cursor:pointer;" onclick="renderAbout()">
+        <h4>ℹ️ About & Disclaimer</h4>
+        <p style="margin-bottom:0;">About this platform, prototype status, data privacy, and contact information.</p>
+      </div>`;
+
+      html += `<div class="card" style="cursor:pointer; border-left:4px solid #e53e3e;" onclick="signOut()">
+        <h4 style="color:#e53e3e;">🚪 Sign Out / Switch Role</h4>
+        <p style="margin-bottom:0;">Return to the role selection screen.</p>
+      </div>`;
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    // ── ABOUT SCREEN ──────────────────────────────────────────────────────
+    function renderAbout() {
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="renderMoreTab()">← Back</button>
+        <h2>ℹ️ About Zaka District Schools Hub</h2>
+
+        <div class="card" style="border-left:4px solid #d4af37;">
+          <h4>What is this platform?</h4>
+          <p>Zaka District Schools Hub is a digital education, administration and school services platform serving teachers, learners, school leaders and district officers across Zaka District, Masvingo Province, Zimbabwe.</p>
+          <p style="margin-bottom:0;">It works fully offline — all features are available without internet. Internet is only needed to send WhatsApp submissions or download new files.</p>
+        </div>
+
+        <div class="card" style="border-left:4px solid #e53e3e;">
+          <h4>⚠️ Prototype Disclaimer</h4>
+          <p>This is an independently developed pilot prototype, currently under evaluation by Zaka District education stakeholders. It is <b>not yet an official Ministry of Primary and Secondary Education or District Office system.</b></p>
+          <p style="margin-bottom:0;">Data entered into this application is stored only on your device unless you explicitly share it via WhatsApp or another channel. Do not enter sensitive personal data until formal adoption is confirmed.</p>
+        </div>
+
+        <div class="card">
+          <h4>🔒 Data & Privacy</h4>
+          <p>All data you enter stays on your device (browser localStorage). Nothing is automatically sent anywhere. When you submit via WhatsApp, only the data you review and send leaves your device.</p>
+          <p style="margin-bottom:0;">District education data belongs to the authorised institution, not to any personal device or personal account.</p>
+        </div>
+
+        <div class="card">
+          <h4>📖 Open Source</h4>
+          <p style="margin-bottom:0;">This platform is open source under the MIT License. Code repository: github.com/lawchiwara0-droid/zakadistrictschoolshub. Authorship and project leadership: Lawson Chiwara, Danda Secondary School, Zaka District.</p>
+        </div>
+
+        <div class="card">
+          <h4>📞 Contact & Support</h4>
+          <p style="margin-bottom:0;">Project Lead: Lawson Chiwara, Head of Department, Danda Secondary School, Zaka District, Masvingo Province. Available for questions, UAT coordination, and training.</p>
+        </div>`;
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    // ── SCHOOL DIRECTORY ──────────────────────────────────────────────────
+    function renderDirectory() {
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="renderMoreTab()">← Back</button>
+        <h2>🏫 School Directory</h2>
+        <p style="color:var(--text-muted); margin-bottom:12px; font-size:0.9rem;">All schools in Zaka District with EMIS codes.</p>
+
+        <input type="text" id="dirSearch" placeholder="Search school name..." oninput="filterDirectory()" style="margin-bottom:12px;">
+
+        <h3>Secondary Schools (${zakaSchools.secondary.length})</h3>
+        <div id="secondary-list">`;
+
+      zakaSchools.secondary.forEach(s => {
+        html += `<div class="card dir-item" style="padding:10px 14px; margin-bottom:6px;" data-name="${s.name.toLowerCase()}">
+          <strong>${s.name}</strong>
+          <span style="float:right; color:#718096; font-size:0.85rem;">EMIS: ${s.code}</span>
+        </div>`;
+      });
+
+      html += `</div><h3 style="margin-top:16px;">Primary Schools (${zakaSchools.primary.length})</h3>
+        <div id="primary-list">`;
+
+      zakaSchools.primary.forEach(s => {
+        html += `<div class="card dir-item" style="padding:10px 14px; margin-bottom:6px;" data-name="${s.name.toLowerCase()}">
+          <strong>${s.name}</strong>
+          <span style="float:right; color:#718096; font-size:0.85rem;">EMIS: ${s.code}</span>
+        </div>`;
+      });
+
+      html += `</div>`;
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function filterDirectory() {
+      const q = document.getElementById('dirSearch').value.toLowerCase();
+      document.querySelectorAll('.dir-item').forEach(el => {
+        el.style.display = el.getAttribute('data-name').includes(q) ? '' : 'none';
+      });
+    }
+
+    function renderFormsByCategory(category) {
+      renderFormsPortal();
+    }
+
+    function renderAdminDashboard() {
+      const enrollments = getEnrollmentData();
+      const submissions = getSubmissions();
+      const examConfirmed = getExamConfirmations();
+
+      const categories = {};
+      content.forms.availableForms.forEach(f => { categories[f.category] = categories[f.category] || []; });
+      submissions.forEach(sub => {
+        const form = content.forms.availableForms.find(f => f.id === sub.formId);
+        const cat = form ? form.category : 'Other';
+        categories[cat] = categories[cat] || [];
+        categories[cat].push(sub);
+      });
+
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="goHome()">← Back to Home</button>`;
+      html += `<h2>🗂️ Admin Dashboard</h2>`;
+      html += `<p style="color:var(--text-muted); margin-bottom:12px;">Everything saved on <b>this device only</b> — not synced from other phones or schools. Sorted into folders for easier browsing.</p>`;
+
+      html += `<div class="card" style="cursor:pointer;" onclick="renderAdminFolder('enrollment')">
+        <h4>📊 Enrollment Submissions <span class="badge badge-success">${enrollments.length}</span></h4>
+        <p style="margin-bottom:0;">All enrollment statistics submitted from this device.</p>
+      </div>`;
+
+      Object.keys(categories).forEach(cat => {
+        html += `<div class="card" style="cursor:pointer;" onclick="renderAdminFolder('forms', '${cat.replace(/'/g, "\\'")}')">
+          <h4>📋 ${cat} Forms <span class="badge badge-success">${categories[cat].length}</span></h4>
+          <p style="margin-bottom:0;">Saved ${cat.toLowerCase()} submissions on this device.</p>
+        </div>`;
+      });
+
+      html += `<div class="card" style="cursor:pointer;" onclick="renderAdminFolder('exams')">
+        <h4>📝 Exam Confirmations <span class="badge badge-success">${examConfirmed.length}</span></h4>
+        <p style="margin-bottom:0;">District Examination papers confirmed as received.</p>
+      </div>`;
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function renderAdminFolder(type, category) {
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="renderAdminDashboard()">← Back to Admin Dashboard</button>`;
+
+      if (type === 'enrollment') {
+        const enrollments = getEnrollmentData();
+        html += `<h2>📊 Enrollment Submissions</h2>`;
+        html += `<p style="color:var(--text-muted); margin-bottom:12px;">${enrollments.length} saved on this device.</p>`;
+        if (!enrollments.length) html += `<div class="card"><p style="margin:0;">No enrollment submissions saved on this device yet.</p></div>`;
+        enrollments.slice().reverse().forEach(e => {
+          html += `
+            <div class="card">
+              <h4>${e.school_name}</h4>
+              <p><b>Term:</b> ${e.term} ${e.year} | <b>Total:</b> ${e.total_learners} learners</p>
+              <p><b>Boys:</b> ${e.boys} | <b>Girls:</b> ${e.girls}</p>
+              <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:0;">${new Date(e.timestamp).toLocaleString()}</p>
+            </div>`;
+        });
+      }
+
+      if (type === 'forms') {
+        const submissions = getSubmissions().filter(sub => {
+          const form = content.forms.availableForms.find(f => f.id === sub.formId);
+          return (form ? form.category : 'Other') === category;
+        });
+        html += `<h2>📋 ${category} Forms</h2>`;
+        html += `<p style="color:var(--text-muted); margin-bottom:12px;">${submissions.length} saved on this device.</p>`;
+        if (!submissions.length) html += `<div class="card"><p style="margin:0;">No ${category.toLowerCase()} submissions saved on this device yet.</p></div>`;
+        submissions.slice().reverse().forEach(sub => {
+          const form = content.forms.availableForms.find(f => f.id === sub.formId);
+          html += `
+            <div class="sync-item">
+              <div style="flex:1;">
+                <strong>${form ? form.name : sub.formId}</strong><br>
+                <small style="color:var(--text-muted);">${new Date(sub.timestamp).toLocaleString()}</small>
+              </div>
+              <div class="sync-item-actions">
+                <button class="btn btn-success" onclick="exportPDF('${sub.id}')">⬇️ PDF</button>
+              </div>
+            </div>`;
+        });
+      }
+
+      if (type === 'exams') {
+        const confirmed = getExamConfirmations();
+        html += `<h2>📝 Exam Confirmations</h2>`;
+        html += `<p style="color:var(--text-muted); margin-bottom:12px;">${confirmed.length} paper(s) confirmed received on this device.</p>`;
+        if (!confirmed.length) html += `<div class="card"><p style="margin:0;">No exam papers confirmed on this device yet.</p></div>`;
+        content.examinations.papers.filter(p => confirmed.includes(p.id)).forEach(p => {
+          html += `<div class="card"><h4>${p.subject} <span class="badge badge-success">${p.form}</span></h4><p style="margin-bottom:0;">${p.term} ${p.year} — confirmed received</p></div>`;
+        });
+      }
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function renderTeacherMode() {
+      const t = content.teacher;
+      let html = `<h2>${t.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${t.description}</p>`;
+      t.prompts.forEach(p => {
+        html += `
+          <div class="card">
+            <h4>${p.name}</h4>
+            <p style="background:#f7fafc; padding:10px; border-left:3px solid var(--secondary); font-size:0.9rem; font-style:italic;">"${p.text.replace(/"/g, '&quot;')}"</p>
+            <button class="btn" style="margin-top:8px; width:100%;" onclick="navigator.clipboard.writeText('${p.text.replace(/'/g, "\\'")}'); alert('Prompt copied!')">📋 Copy Prompt</button>
+          </div>`;
+      });
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function renderLearnerMode() {
+      const l = content.learner;
+      let html = `<h2>${l.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${l.description}</p>`;
+      Object.keys(l.forms).forEach(f => {
+        html += `<h3>Form ${f}</h3>`;
+        l.forms[f].topics.forEach((t, i) => {
+          const hasLesson = !!t.detail;
+          html += `
+            <div class="card" style="cursor:pointer;" onclick="openLessonDetail(${f}, ${i})">
+              <h4>📖 ${t.subject}: ${t.name} ${hasLesson ? '<span class="badge badge-success">Full Lesson</span>' : ''}</h4>
+              <p><b>Notes:</b> ${t.notes}</p>
+              <p><b>Practice:</b> ${t.practice}</p>
+              <p style="color:var(--primary); font-weight:600; font-size:0.85rem; margin-bottom:0;">${hasLesson ? 'Tap to open full lesson →' : 'Tap for details →'}</p>
+            </div>`;
+        });
+      });
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function openLessonDetail(formNum, index) {
+      const topic = content.learner.forms[formNum].topics[index];
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="renderLearnerMode()">← Back to Learner Portal</button>`;
+      html += `<h2>${topic.subject}: ${topic.name}</h2><p style="color:var(--text-muted); margin-bottom:12px;">Form ${formNum}</p>`;
+
+      if (topic.detail) {
+        html += `<div class="card"><h4>📘 Explanation</h4><p>${topic.detail.explanation}</p></div>`;
+        html += `<div class="card"><h4>💡 Worked Example</h4><p>${topic.detail.example}</p></div>`;
+        html += `<h3>Practice Questions</h3>`;
+        topic.detail.questions.forEach((item, qi) => {
+          const qid = `q_${formNum}_${index}_${qi}`;
+          html += `
+            <div class="card">
+              <p><b>${qi + 1}.</b> ${item.q}</p>
+              <button class="btn btn-secondary" onclick="document.getElementById('${qid}').style.display='block'; this.style.display='none';">Show Answer</button>
+              <p id="${qid}" style="display:none; margin-top:8px; padding:10px; background:#f7fafc; border-left:3px solid var(--success); border-radius:6px;"><b>Answer:</b> ${item.a}</p>
+            </div>`;
+        });
+      } else {
+        html += `
+          <div class="card">
+            <p><b>Notes:</b> ${topic.notes}</p>
+            <p><b>Practice:</b> ${topic.practice}</p>
+            <p style="color:var(--text-muted); font-style:italic; margin-bottom:0;">Full lesson with worked examples and practice questions coming soon for this topic.</p>
+          </div>`;
+      }
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function renderEnrollmentModeGated() {
+      requirePin('enrollment');
+    }
+
+    function renderFormsPortalGated() {
+      requirePin('forms');
+    }
+
+    function renderExaminationsGated() {
+      requirePin('exams');
+    }
+
+    function renderEnrollmentMode() {
+      const enrollments = getEnrollmentData();
+      const totalStudents = enrollments.reduce((sum, e) => sum + (parseInt(e.total_learners) || 0), 0);
+      const totalBoys = enrollments.reduce((sum, e) => sum + (parseInt(e.boys) || 0), 0);
+      const totalGirls = enrollments.reduce((sum, e) => sum + (parseInt(e.girls) || 0), 0);
+
+      let html = `<h2>📊 District Enrollment Statistics</h2>`;
+      
+      html += `<div class="stats-card"><h4>${totalStudents}</h4><p>Total Enrollment (All Schools)</p></div>`;
+      html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">`;
+      html += `<div class="stats-card" style="background:linear-gradient(135deg, #2b6cb0, #1a365d);"><h4>${totalBoys}</h4><p>Total Boys</p></div>`;
+      html += `<div class="stats-card" style="background:linear-gradient(135deg, #d53f8c, #831843);"><h4>${totalGirls}</h4><p>Total Girls</p></div></div>`;
+
+      html += `<div class="card"><h4>📝 Submit School Enrollment</h4>`;
+      html += `<form onsubmit="submitEnrollment(event)">`;
+      html += `<label>Select School</label>`;
+      html += `<select id="school_select" required onchange="autoFillSchoolCode()">`;
+      html += `<option value="">-- Choose School --</option>`;
+      html += `<optgroup label="Secondary Schools">`;
+      zakaSchools.secondary.forEach(s => html += `<option value="${s.name}" data-code="${s.code}">${s.name} (${s.code})</option>`);
+      html += `</optgroup><optgroup label="Primary Schools">`;
+      zakaSchools.primary.forEach(s => html += `<option value="${s.name}" data-code="${s.code}">${s.name} (${s.code})</option>`);
+      html += `</optgroup></select>`;
+      
+      html += `<label>School Code (EMIS)</label><input type="text" id="school_code" readonly required>`;
+      html += `<label>Term</label><select id="term" required><option>Term 1</option><option>Term 2</option><option>Term 3</option></select>`;
+      html += `<label>Year</label><input type="number" id="year" value="2026" required>`;
+      html += `<label>Total Learners Enrolled</label><input type="number" id="total_learners" required>`;
+      html += `<label>Boys</label><input type="number" id="boys" required>`;
+      html += `<label>Girls</label><input type="number" id="girls" required>`;
+      html += `<label>Form 1 Enrollment</label><input type="number" id="form1" required>`;
+      html += `<label>Form 2 Enrollment</label><input type="number" id="form2" required>`;
+      html += `<label>Form 3 Enrollment</label><input type="number" id="form3" required>`;
+      html += `<label>Form 4 Enrollment</label><input type="number" id="form4" required>`;
+      
+      html += `<button type="submit" class="btn btn-whatsapp">💬 Submit via WhatsApp to District Office</button>`;
+      html += `</form></div>`;
+
+      if (enrollments.length > 0) {
+        html += `<h3 style="margin-top:20px;">📤 Recent Submissions</h3>`;
+        enrollments.slice(-5).reverse().forEach(e => {
+          html += `
+            <div class="card">
+              <h4>${e.school_name}</h4>
+              <p><b>Term:</b> ${e.term} ${e.year} | <b>Total:</b> ${e.total_learners} learners</p>
+              <p><b>Boys:</b> ${e.boys} | <b>Girls:</b> ${e.girls}</p>
+              <p style="color:var(--text-muted); font-size:0.8rem;">${new Date(e.timestamp).toLocaleString()}</p>
+            </div>`;
+        });
+      }
+
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function autoFillSchoolCode() {
+      const select = document.getElementById('school_select');
+      const selectedOption = select.options[select.selectedIndex];
+      const code = selectedOption.getAttribute('data-code');
+      if (code) document.getElementById('school_code').value = code;
+    }
+
+    function submitEnrollment(event) {
+      event.preventDefault();
+      
+      const enrollmentData = {
+        school_name: document.getElementById('school_select').value,
+        school_code: document.getElementById('school_code').value,
+        term: document.getElementById('term').value,
+        year: document.getElementById('year').value,
+        total_learners: document.getElementById('total_learners').value,
+        boys: document.getElementById('boys').value,
+        girls: document.getElementById('girls').value,
+        form1: document.getElementById('form1').value,
+        form2: document.getElementById('form2').value,
+        form3: document.getElementById('form3').value,
+        form4: document.getElementById('form4').value
+      };
+
+      saveEnrollmentData(enrollmentData);
+
+      const message = `📊 *ENROLLMENT SUBMISSION*\n\n` +
+        `*School:* ${enrollmentData.school_name}\n` +
+        `*Code:* ${enrollmentData.school_code}\n` +
+        `*Term:* ${enrollmentData.term} ${enrollmentData.year}\n\n` +
+        `*Total Learners:* ${enrollmentData.total_learners}\n` +
+        `*Boys:* ${enrollmentData.boys}\n` +
+        `*Girls:* ${enrollmentData.girls}\n\n` +
+        `*Form 1:* ${enrollmentData.form1}\n` +
+        `*Form 2:* ${enrollmentData.form2}\n` +
+        `*Form 3:* ${enrollmentData.form3}\n` +
+        `*Form 4:* ${enrollmentData.form4}\n\n` +
+        `_Submitted via Zaka District Schools Hub_`;
+
+      const whatsappUrl = `https://wa.me/${DISTRICT_WHATSAPP}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+
+      alert('✅ Enrollment saved! WhatsApp opened - send to District Office.');
       renderEnrollmentMode();
+    }
+
+    function renderFormsPortal() {
+      const f = content.forms;
+      let html = `<h2>${f.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${f.description}</p>`;
+      html += `<div class="card" style="background:#fffaf0; border-color:#f6ad55;">
+        <p style="margin-bottom:0; font-size:0.85rem;"><b>How saving works:</b> filling a form and tapping "Save to This Device" stores it only on this phone — it stays here even after closing the app, and nothing is sent anywhere automatically. When you're ready to actually send it, open it below and tap Download PDF (to share the file yourself) or use WhatsApp where that option is offered.</p>
+      </div>`;
+      const categories = [...new Set(f.availableForms.map(form => form.category))];
+      html += `<div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">`;
+      html += `<button class="btn btn-secondary" onclick="filterForms('all', this)">All</button>`;
+      categories.forEach(cat => {
+        html += `<button class="btn btn-secondary" onclick="filterForms('${cat}', this)">${cat}</button>`;
+      });
+      html += `</div>`;
+
+      f.availableForms.forEach(form => {
+        html += `
+          <div class="card">
+            <h4>${form.name} <span class="badge badge-success">${form.category}</span></h4>
+            <button class="btn btn-secondary" onclick="openForm('${form.id}')">📝 Fill Form</button>
+          </div>`;
+      });
+
+      const submissions = getSubmissions();
+      if (submissions.length > 0) {
+        html += `<div class="sync-queue"><h4>💾 Saved on This Device (${submissions.length})</h4>
+          <p style="font-size:0.8rem; color:#c05621; margin-bottom:10px;">These are drafts/completed forms stored locally. They will NOT reach the District Office on their own — download and share each one yourself.</p>`;
+        submissions.forEach(sub => {
+          const formName = f.availableForms.find(f => f.id === sub.formId)?.name || sub.formId;
+          html += `
+            <div class="sync-item">
+              <div style="flex:1;">
+                <strong>${formName}</strong><br>
+                <small style="color:var(--text-muted);">Saved ${new Date(sub.timestamp).toLocaleString()}</small>
+              </div>
+              <div class="sync-item-actions">
+                <button class="btn btn-success" onclick="exportPDF('${sub.id}')">⬇️ Download PDF</button>
+                <button class="btn btn-danger" onclick="deleteSubmission('${sub.id}'); renderFormsPortal();">🗑️</button>
+              </div>
+            </div>`;
+        });
+        html += `</div>`;
+      }
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function filterForms(category, button) {
+      const f = content.forms;
+      const container = document.getElementById('app');
+      const cards = container.querySelectorAll('.card');
+      cards.forEach(card => {
+        const formName = card.querySelector('h4').textContent;
+        card.style.display = (category === 'all' || formName.includes(category)) ? 'block' : 'none';
+      });
+      document.querySelectorAll('.btn-secondary').forEach(btn => { btn.style.backgroundColor = '#edf2f7'; btn.style.color = 'var(--text)'; });
+      button.style.backgroundColor = 'var(--primary)';
+      button.style.color = 'white';
+    }
+
+    function openForm(formId) {
+      const form = content.forms.availableForms.find(f => f.id === formId);
+      if (!form) return;
+      let html = `<h2>${form.name}</h2><button class="btn btn-secondary" style="margin-bottom:12px;" onclick="renderFormsPortal()">← Back</button><form id="dynamicForm" onsubmit="handleFormSubmit(event, '${formId}')">`;
+      form.fields.forEach(field => {
+        html += `<label>${field.label}</label>`;
+        if (field.type === 'textarea') html += `<textarea id="${field.id}" required></textarea>`;
+        else if (field.type === 'select') {
+          html += `<select id="${field.id}" required><option value="">Select...</option>`;
+          field.options.forEach(opt => html += `<option value="${opt}">${opt}</option>`);
+          html += `</select>`;
+        } else html += `<input type="${field.type}" id="${field.id}" required>`;
+      });
+      html += `<button type="submit" class="btn">💾 Save to This Device</button></form>`;
+      document.getElementById('app').innerHTML = html;
+    }
+
+    function handleFormSubmit(event, formId) {
+      event.preventDefault();
+      const form = content.forms.availableForms.find(f => f.id === formId);
+      const formData = {};
+      form.fields.forEach(field => { formData[field.label] = document.getElementById(field.id).value; });
+      saveSubmission(formId, formData);
+      alert('✅ Saved to this device. It will stay here — even after closing the app — until you download it or delete it. Nothing is sent automatically; find it under "Saved on This Device" below to download or share it.');
+      renderFormsPortal();
+    }
+
+    async function exportPDF(submissionId) {
+      const submissions = getSubmissions();
+      const submission = submissions.find(s => s.id === submissionId);
+      if (!submission) return;
+      const form = content.forms.availableForms.find(f => f.id === submission.formId);
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFillColor(15, 61, 46);
+      doc.rect(0, 0, 210, 40, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(16);
+      doc.text('ZAKA DISTRICT SCHOOLS HUB', 105, 15, { align: 'center' });
+      doc.setFontSize(12);
+      doc.text(`Form: ${form.name}`, 105, 25, { align: 'center' });
+      doc.text(`Submitted: ${new Date(submission.timestamp).toLocaleString()}`, 105, 33, { align: 'center' });
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(11);
+      let y = 60;
+      Object.entries(submission.formData).forEach(([label, value]) => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        doc.setFont(undefined, 'bold');
+        doc.text(`${label}:`, 20, y);
+        doc.setFont(undefined, 'normal');
+        const valueLines = doc.splitTextToSize(String(value), 170);
+        doc.text(valueLines, 20, y + 5);
+        y += 5 + (valueLines.length * 5);
+      });
+      doc.setFontSize(9);
+      doc.setTextColor(128, 128, 128);
+      doc.text('Generated offline via Zaka District Schools AI Hub', 105, 290, { align: 'center' });
+      doc.save(`${form.name.replace(/s+/g, '_')}_${submissionId}.pdf`);
+    }
+
+    function renderExaminations() {
+      const e = content.examinations;
+      let html = `<h2>${e.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${e.description}</p>`;
+
+      const confirmed = getExamConfirmations();
+
+      e.papers.forEach(paper => {
+        const isConfirmed = confirmed.includes(paper.id);
+        html += `
+          <div class="card">
+            <h4>${paper.subject} <span class="badge badge-success">${paper.form}</span></h4>
+            <p><b>${paper.term} ${paper.year}</b></p>
+            <div class="btn-row" style="display:flex; gap:8px;">
+              <a href="${paper.file}" download style="flex:1;"><button class="btn" style="width:100%;">⬇️ Download Paper</button></a>
+            </div>
+            <button class="btn ${isConfirmed ? 'btn-success' : 'btn-whatsapp'}" style="width:100%; margin-top:8px;" onclick="confirmExamReceived('${paper.id}', '${paper.form}', '${paper.subject}', '${paper.term}', '${paper.year}')">
+              ${isConfirmed ? '✅ Confirmed Received' : '💬 Confirm Received via WhatsApp'}
+            </button>
+          </div>`;
+      });
+
+      document.getElementById('app').innerHTML = html;
     }
 
     function getExamConfirmations() {
@@ -65,156 +1852,41 @@
       return data ? JSON.parse(data) : [];
     }
 
-    function saveExamConfirmation(examId) {
-      const current = getExamConfirmations();
-      if (!current.includes(examId)) {
-        current.push(examId);
-        localStorage.setItem('zaka_exam_confirmations', JSON.stringify(current));
-      }
-    }
-
-    function renderFormsPortalGated() {
-      requirePin('forms');
-    }
-
-    function renderFormsPortal() {
-      let html = `<h2>📋 Administrative Forms Portal</h2>`;
-      html += `<p style="color:var(--text-muted); margin-bottom:12px;">Select an official return or appraisal form to complete and store offline.</p>`;
-      
-      content.forms.availableForms.forEach(f => {
-        html += `<div class="card" style="cursor:pointer;" onclick="renderFormBuilder('${f.id}')">
-          <h4>${f.name}</h4>
-          <p style="margin-bottom:4px;">Category: <b>${f.category}</b></p>
-          <span class="badge badge-success">Fill Offline</span>
-        </div>`;
-      });
-      document.getElementById('app').innerHTML = html;
-    }
-
-    function renderFormBuilder(formId) {
-      const formDef = content.forms.availableForms.find(f => f.id === formId);
-      if (!formDef) return;
-
-      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="renderFormsPortal()">← Back to Forms</button>`;
-      html += `<h2>${formDef.name}</h2>`;
-      html += `<form onsubmit="handleFormSubmission(event, '${formDef.id}')">`;
-
-      formDef.fields.forEach(field => {
-        html += `<label for="${field.id}">${field.label}</label>`;
-        if (field.type === 'select') {
-          html += `<select id="${field.id}" required><option value="">-- Select --</option>`;
-          field.options.forEach(opt => { html += `<option value="${opt}">${opt}</option>`; });
-          html += `</select>`;
-        } else if (field.type === 'textarea') {
-          html += `<textarea id="${field.id}" required></textarea>`;
-        } else {
-          html += `<input type="${field.type}" id="${field.id}" required>`;
-        }
-      });
-
-      html += `<button type="submit" class="btn btn-whatsapp" style="margin-top:12px;">💾 Save Record Offline</button>`;
-      html += `</form>`;
-      document.getElementById('app').innerHTML = html;
-    }
-
-    function handleFormSubmission(e, formId) {
-      e.preventDefault();
-      const formDef = content.forms.availableForms.find(f => f.id === formId);
-      const formData = {};
-      formDef.fields.forEach(f => {
-        const el = document.getElementById(f.id);
-        if (el) formData[f.id] = el.value;
-      });
-
-      saveSubmission(formId, formData);
-      alert('Form saved locally!');
-      renderAdminDashboard();
-    }
-
-    function renderExaminationsGated() {
-      requirePin('exams');
-    }
-
-    function renderExaminations() {
-      let html = `<h2>📝 District Examinations</h2>`;
-      html += `<p style="color:var(--text-muted); margin-bottom:12px;">${content.examinations.description}</p>`;
-
+    function confirmExamReceived(id, form, subject, term, year) {
       const confirmed = getExamConfirmations();
-
-      content.examinations.papers.forEach(p => {
-        const isConfirmed = confirmed.includes(p.id);
-        html += `<div class="card">
-          <h4>${p.subject} ${p.code ? '(' + p.code + ')' : ''} <span class="badge badge-success">${p.form}</span></h4>
-          <p><b>Session:</b> ${p.term} ${p.year}</p>
-          <div style="display:flex; gap:8px; margin-top:8px;">
-            <a href="${p.file}" download class="btn" style="text-decoration:none; text-align:center;">⬇️ Download Paper</a>
-            ${!isConfirmed ? `<button class="btn btn-success" onclick="saveExamConfirmation('${p.id}'); renderExaminations();">Confirm Receipt</button>` : `<span class="badge badge-whatsapp" style="align-self:center;">✓ Confirmed</span>`}
-          </div>
-        </div>`;
-      });
-
-      document.getElementById('app').innerHTML = html;
+      if (!confirmed.includes(id)) {
+        confirmed.push(id);
+        localStorage.setItem('zaka_exam_confirmations', JSON.stringify(confirmed));
+      }
+      const message = `✅ *EXAM PAPER RECEIVED*\n\n` +
+        `*Form:* ${form}\n` +
+        `*Subject:* ${subject}\n` +
+        `*Term:* ${term} ${year}\n\n` +
+        `_Confirmed via Zaka District Schools Hub_`;
+      window.open(`https://wa.me/${DISTRICT_WHATSAPP}?text=${encodeURIComponent(message)}`, '_blank');
+      renderExaminations();
     }
 
     function renderNotices() {
-      let html = `<h2>🔔 Official District Notices</h2>`;
-      html += `<p style="color:var(--text-muted); margin-bottom:12px;">${content.notices.description}</p>`;
-
-      content.notices.items.forEach(n => {
-        html += `<div class="card" style="${n.priority === 'High' ? 'border-left:4px solid var(--danger);' : ''}">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h4>${n.subject}</h4>
-            <span class="badge ${n.priority === 'High' ? 'badge-high' : 'badge-success'}">${n.priority}</span>
-          </div>
-          <p style="font-size:0.8rem; color:var(--text-muted);">From: ${n.from} | Date: ${n.date}</p>
-          <p style="margin-top:6px;">${n.summary}</p>
-          ${n.file ? `<a href="${n.file}" download class="btn btn-secondary" style="display:inline-block; margin-top:8px; text-decoration:none;">⬇️ Download Attachment</a>` : ''}
-        </div>`;
+      const n = content.notices;
+      let html = `<h2>${n.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${n.description}</p>`;
+      n.items.forEach(item => {
+        const priorityClass = item.priority === 'High' ? 'badge-high' : 'badge-success';
+        html += `
+          <div class="card">
+            <h4>${item.subject} <span class="badge ${priorityClass}">${item.priority}</span></h4>
+            <p><b>From:</b> ${item.from} | <b>Date:</b> ${item.date}</p>
+            <p>${item.summary}</p>
+            ${item.file ? `<a href="${item.file}" download><button class="btn" style="width:100%;">⬇️ Download Full Document</button></a>` : ''}
+          </div>`;
       });
-
       document.getElementById('app').innerHTML = html;
     }
 
-    function exportPDF(submissionId) {
-      const submissions = getSubmissions();
-      const sub = submissions.find(s => s.id === submissionId);
-      if (!sub) return;
-
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const formDef = content.forms.availableForms.find(f => f.id === sub.formId);
-      
-      doc.setFontSize(16);
-      doc.text(formDef ? formDef.name : "Submission Record", 14, 20);
-      doc.setFontSize(10);
-      doc.text(`Submitted: ${new Date(sub.timestamp).toLocaleString()}`, 14, 28);
-      
-      let y = 38;
-      Object.entries(sub.formData).forEach(([key, val]) => {
-        if (y > 270) { doc.addPage(); y = 20; }
-        doc.setFont("helvetica", "bold");
-        doc.text(`${key}:`, 14, y);
-        doc.setFont("helvetica", "normal");
-        doc.text(String(val), 60, y);
-        y += 8;
-      });
-
-      doc.save(`${sub.formId}_${sub.id}.pdf`);
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      initPIN();
-      renderHome();
-      updateOfflineIndicator();
-    });
+    // Init
+    initPIN();
+    navTo('home', document.getElementById('nav-home'));
+    updateOfflineIndicator();
   </script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js');
-    });
-  }
-</script>
 </body>
 </html>
