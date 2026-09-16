@@ -1218,7 +1218,7 @@
         admin: [
           { icon:'📊', label:'Enrollment Returns', sub:'Submit to District Office', fn:"requirePin('enrollment')" },
           { icon:'📋', label:'Forms & Reports', sub:'ED46, RBM, Narratives', fn:"navTo('services', document.getElementById('nav-services'))" },
-          { icon:'🗂️', label:'Admin Dashboard', sub:'Saved data & submissions', fn:"renderAdminDashboard()" },
+          { icon:'🗂️', label:'Admin Dashboard', sub:'Saved data & submissions', fn:"requirePin('admindash')" },
           { icon:'📝', label:'Examinations', sub:'Papers & timetables', fn:"navTo('exams', document.getElementById('nav-exams'))" },
           { icon:'🔔', label:'Notices', sub:'District directives', fn:"navTo('more', document.getElementById('nav-more')); setTimeout(renderNotices,50)" },
           { icon:'🏫', label:'School Directory', sub:'All Zaka schools', fn:"renderDirectory()" },
