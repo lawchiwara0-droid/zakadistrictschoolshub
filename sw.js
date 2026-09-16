@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'zaka-hub-v7-4-role-scope';
+const CACHE_VERSION = 'zaka-hub-v7-5-exam-integrity';
 const urlsToCache = [
   './',
   './index.html',

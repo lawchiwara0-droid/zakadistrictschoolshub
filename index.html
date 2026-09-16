@@ -519,7 +519,7 @@
     <button onclick="setActiveNav(this, renderLearnerMode)">📖<br>Learner</button>
     <button id="navBtnEnrollment" onclick="setActiveNav(this, renderEnrollmentModeGated)">📊<br>Enrollment</button>
     <button id="navBtnForms" onclick="setActiveNav(this, renderFormsPortalGated)">📋<br>Forms</button>
-    <button onclick="setActiveNav(this, renderExaminationsGated)">📝<br>Exams</button>
+    <button id="navBtnExams" onclick="setActiveNav(this, renderExaminationsGated)">📝<br>Exams</button>
     <button onclick="setActiveNav(this, renderNotices)">🔔<br>Notices</button>
     <button class="btn-signout" onclick="signOut()">🚪<br>Out</button>
   </nav>
@@ -1158,13 +1158,19 @@
       const teacherBtn = document.getElementById('navBtnTeacher');
       const enrollmentBtn = document.getElementById('navBtnEnrollment');
       const formsBtn = document.getElementById('navBtnForms');
+      const examsBtn = document.getElementById('navBtnExams');
       // Learners see only Learner-relevant tabs; PIN gates still apply
       // underneath as a backstop, this just keeps the UI honest about
-      // what a Learner should be looking at.
+      // what a Learner should be looking at. Exams is hidden too because
+      // it currently shares real, undistributed exam papers with Teacher —
+      // a paper leaking before it's administered is a genuine integrity
+      // risk, not just a data-tidiness issue. Learners still get exam
+      // timetables via Notices, which is already correctly scoped.
       const hideForLearner = (role === 'learner') ? 'none' : '';
       if (teacherBtn) teacherBtn.style.display = hideForLearner;
       if (enrollmentBtn) enrollmentBtn.style.display = hideForLearner;
       if (formsBtn) formsBtn.style.display = hideForLearner;
+      if (examsBtn) examsBtn.style.display = hideForLearner;
     }
 
     // ── HOME TAB ──────────────────────────────────────────────────────────
@@ -1227,8 +1233,7 @@
         ],
         learner: [
           { icon:'📚', label:'Learning Centre', sub:'Notes, lessons, quizzes', fn:"navTo('learn', document.getElementById('nav-learn'))" },
-          { icon:'📝', label:'Exam Papers', sub:'Download & prepare', fn:"navTo('exams', document.getElementById('nav-exams'))" },
-          { icon:'🔔', label:'Notices', sub:'School announcements', fn:"navTo('more', document.getElementById('nav-more')); setTimeout(renderNotices,50)" },
+          { icon:'🔔', label:'Notices', sub:'School announcements — incl. exam timetables', fn:"navTo('more', document.getElementById('nav-more')); setTimeout(renderNotices,50)" },
         ],
         admin: [
           { icon:'📊', label:'Enrollment Returns', sub:'Submit to District Office', fn:"requirePin('enrollment')" },
