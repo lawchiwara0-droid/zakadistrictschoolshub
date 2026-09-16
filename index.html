@@ -515,10 +515,10 @@
   <main id="app"></main>
 
   <nav>
-    <button onclick="setActiveNav(this, renderTeacherMode)">📝<br>Teacher</button>
+    <button id="navBtnTeacher" onclick="setActiveNav(this, renderTeacherMode)">📝<br>Teacher</button>
     <button onclick="setActiveNav(this, renderLearnerMode)">📖<br>Learner</button>
-    <button onclick="setActiveNav(this, renderEnrollmentModeGated)">📊<br>Enrollment</button>
-    <button onclick="setActiveNav(this, renderFormsPortalGated)">📋<br>Forms</button>
+    <button id="navBtnEnrollment" onclick="setActiveNav(this, renderEnrollmentModeGated)">📊<br>Enrollment</button>
+    <button id="navBtnForms" onclick="setActiveNav(this, renderFormsPortalGated)">📋<br>Forms</button>
     <button onclick="setActiveNav(this, renderExaminationsGated)">📝<br>Exams</button>
     <button onclick="setActiveNav(this, renderNotices)">🔔<br>Notices</button>
     <button class="btn-signout" onclick="signOut()">🚪<br>Out</button>
@@ -935,13 +935,13 @@
         title: "Official District Notices", 
         description: "Directives from District Schools Office, HR, and BSPZ.",
         items: [
-          { id: "notice_zimsec_olevel", date: "2026-09-13", from: "ZIMSEC", subject: "ZGCE Ordinary Level Examination Timetable — Nov/Dec 2026", summary: "Official O-Level timetable for the November/December 2026 session. Practical sessions begin 14 September 2026; written papers run from 12 October through 23 November 2026. English Language: 12-13 October. Results published third week of January 2027.", priority: "High", file: "zimsec_olevel_timetable_nov2026.pdf" },
-          { id: "notice_zimsec_alevel", date: "2026-05-13", from: "ZIMSEC", subject: "ZGCE Advanced Level Examination Timetable — Nov/Dec 2026 Session", summary: "Full paper-by-paper timetable for the November/December 2026 A-Level examinations. Practical/planning sessions begin 14 September 2026; written papers run from 13 October through 20 November 2026. Results are published within the second week of January 2027 (A-Level) and third week of January 2027 (O-Level). Queries: +263 242 304 119 or WhatsApp 0782 745 768. Malpractice hotlines: 0800 4100 / 0716 800 189 / 0800 4461 / 0773 220 220.", priority: "High", file: "zimsec_alevel_timetable_nov2026.pdf" },
-          { id: "notice_000", date: "2026-09-09", from: "District Schools Office", subject: "Term 3 District Examinations Now Available", summary: "Term 3 District Examination papers are now published in the Exams tab. Every school can download directly and confirm receipt — no need to wait on relay from other schools or offices.", priority: "High" },
-          { id: "notice_001", date: "2025-09-01", from: "District Schools Office", subject: "Submission Deadline: Term 3 Annex A", summary: "Please ensure all data sets are compiled by 20 September 2025. Offline queues via this portal will automatically sync.", priority: "High" },
-          { id: "notice_002", date: "2025-09-05", from: "BSPZ Coordinator", subject: "Form 4 Mock Examination Registration", summary: "All schools must submit Form 4 candidate lists by 15 September 2025. Use the Enrollment Tab to submit.", priority: "High" },
-          { id: "notice_003", date: "2025-09-10", from: "HR Department", subject: "RBM Appraisal Cycle 2025", summary: "Mid-year RBM appraisals must be completed by 30 September 2025. Submit via Forms Portal.", priority: "Medium" },
-          { id: "notice_004", date: "2025-09-15", from: "District Schools Office", subject: "Head Teachers Meeting", summary: "All Head Teachers to attend quarterly meeting on 25 September 2025 at District Office.", priority: "Medium" }
+          { id: "notice_zimsec_olevel", date: "2026-09-13", from: "ZIMSEC", subject: "ZGCE Ordinary Level Examination Timetable — Nov/Dec 2026", summary: "Official O-Level timetable for the November/December 2026 session. Practical sessions begin 14 September 2026; written papers run from 12 October through 23 November 2026. English Language: 12-13 October. Results published third week of January 2027.", priority: "High", file: "zimsec_olevel_timetable_nov2026.pdf", audience: "all" },
+          { id: "notice_zimsec_alevel", date: "2026-05-13", from: "ZIMSEC", subject: "ZGCE Advanced Level Examination Timetable — Nov/Dec 2026 Session", summary: "Full paper-by-paper timetable for the November/December 2026 A-Level examinations. Practical/planning sessions begin 14 September 2026; written papers run from 13 October through 20 November 2026. Results are published within the second week of January 2027 (A-Level) and third week of January 2027 (O-Level). Queries: +263 242 304 119 or WhatsApp 0782 745 768. Malpractice hotlines: 0800 4100 / 0716 800 189 / 0800 4461 / 0773 220 220.", priority: "High", file: "zimsec_alevel_timetable_nov2026.pdf", audience: "all" },
+          { id: "notice_000", date: "2026-09-09", from: "District Schools Office", subject: "Term 3 District Examinations Now Available", summary: "Term 3 District Examination papers are now published in the Exams tab. Every school can download directly and confirm receipt — no need to wait on relay from other schools or offices.", priority: "High", audience: "teacher" },
+          { id: "notice_001", date: "2025-09-01", from: "District Schools Office", subject: "Submission Deadline: Term 3 Annex A", summary: "Please ensure all data sets are compiled by 20 September 2025. Offline queues via this portal will automatically sync.", priority: "High", audience: "teacher" },
+          { id: "notice_002", date: "2025-09-05", from: "BSPZ Coordinator", subject: "Form 4 Mock Examination Registration", summary: "All schools must submit Form 4 candidate lists by 15 September 2025. Use the Enrollment Tab to submit.", priority: "High", audience: "teacher" },
+          { id: "notice_003", date: "2025-09-10", from: "HR Department", subject: "RBM Appraisal Cycle 2025", summary: "Mid-year RBM appraisals must be completed by 30 September 2025. Submit via Forms Portal.", priority: "Medium", audience: "teacher" },
+          { id: "notice_004", date: "2025-09-15", from: "District Schools Office", subject: "Head Teachers Meeting", summary: "All Head Teachers to attend quarterly meeting on 25 September 2025 at District Office.", priority: "Medium", audience: "teacher" }
         ]
       }
     };
@@ -1149,7 +1149,22 @@
 
     function selectRole(role) {
       setUserRole(role);
+      updateNavVisibility();
       renderHome();
+    }
+
+    function updateNavVisibility() {
+      const role = getUserRole();
+      const teacherBtn = document.getElementById('navBtnTeacher');
+      const enrollmentBtn = document.getElementById('navBtnEnrollment');
+      const formsBtn = document.getElementById('navBtnForms');
+      // Learners see only Learner-relevant tabs; PIN gates still apply
+      // underneath as a backstop, this just keeps the UI honest about
+      // what a Learner should be looking at.
+      const hideForLearner = (role === 'learner') ? 'none' : '';
+      if (teacherBtn) teacherBtn.style.display = hideForLearner;
+      if (enrollmentBtn) enrollmentBtn.style.display = hideForLearner;
+      if (formsBtn) formsBtn.style.display = hideForLearner;
     }
 
     // ── HOME TAB ──────────────────────────────────────────────────────────
@@ -1869,8 +1884,15 @@
 
     function renderNotices() {
       const n = content.notices;
+      const role = getUserRole();
+      // Learners only see items marked "all" or "learner"; everyone else
+      // (teacher/admin) sees everything, since teacher/admin notices are
+      // relevant across both those roles in a small school office.
+      const visibleItems = (role === 'learner')
+        ? n.items.filter(item => item.audience === 'all' || item.audience === 'learner')
+        : n.items;
       let html = `<h2>${n.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${n.description}</p>`;
-      n.items.forEach(item => {
+      visibleItems.forEach(item => {
         const priorityClass = item.priority === 'High' ? 'badge-high' : 'badge-success';
         html += `
           <div class="card">
@@ -1885,6 +1907,7 @@
 
     // Init
     initPIN();
+    updateNavVisibility();
     navTo('home', document.getElementById('nav-home'));
     updateOfflineIndicator();
   </script>

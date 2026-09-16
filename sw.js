@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'zaka-hub-v7-3-nav-lock';
+const CACHE_VERSION = 'zaka-hub-v7-4-role-scope';
 const urlsToCache = [
   './',
   './index.html',
