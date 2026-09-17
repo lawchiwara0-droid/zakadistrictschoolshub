@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'zaka-hub-v7-5-exam-integrity';
+const CACHE_VERSION = 'zaka-hub-v8-0-firebase-admin';
 const urlsToCache = [
   './',
   './index.html',

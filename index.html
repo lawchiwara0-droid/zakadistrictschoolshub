@@ -502,6 +502,22 @@
     </div>
   </div>
 
+  <div class="pin-modal" id="staffLoginModal">
+    <div class="pin-modal-content">
+      <h3>🔒 Staff Sign In</h3>
+      <p style="color:#718096; font-size:0.85rem; margin-bottom:14px;">Sign in with your staff account to continue</p>
+      <input type="email" id="staffEmail" placeholder="Email" autocomplete="username"
+        style="width:100%; padding:11px; margin-bottom:10px; border:1px solid #cbd5e0; border-radius:8px; font-size:1rem; box-sizing:border-box;">
+      <input type="password" id="staffPassword" placeholder="Password" autocomplete="current-password"
+        style="width:100%; padding:11px; margin-bottom:10px; border:1px solid #cbd5e0; border-radius:8px; font-size:1rem; box-sizing:border-box;">
+      <p id="staffLoginError" style="color:#c53030; font-size:0.85rem; display:none; margin:0 0 10px;"></p>
+      <div class="pin-actions">
+        <button class="pin-clear" onclick="closeStaffLoginModal()">Cancel</button>
+        <button class="pin-confirm" id="staffLoginSubmitBtn" onclick="submitStaffLogin()">Sign In</button>
+      </div>
+    </div>
+  </div>
+
   <header onclick="goHome()" style="cursor:pointer;" title="Tap to go Home">
     <div style="display:flex; align-items:center; justify-content:center; gap:14px; max-width:600px; margin:0 auto;">
       <img src="icon-192.png" alt="Zaka District Schools Hub crest" style="width:60px; height:60px; flex-shrink:0;">
@@ -1119,6 +1135,67 @@
       openPinModal('verify', 'Verify PIN', 'Enter your 4-digit PIN to access this area', action);
     }
 
+    // ── STAFF FIREBASE LOGIN (real accounts, replacing PIN one area at a time) ──
+    let staffAuthTargetAction = null;
+    const STAFF_ROLE_REQUIREMENTS = {
+      admindash: ['admin']  // which roles may proceed, per protected action
+    };
+
+    function requireStaffAuth(action) {
+      staffAuthTargetAction = action;
+      document.getElementById('staffEmail').value = '';
+      document.getElementById('staffPassword').value = '';
+      document.getElementById('staffLoginError').style.display = 'none';
+      document.getElementById('staffLoginModal').classList.add('show');
+    }
+
+    function closeStaffLoginModal() {
+      document.getElementById('staffLoginModal').classList.remove('show');
+      staffAuthTargetAction = null;
+    }
+
+    async function submitStaffLogin() {
+      const email = document.getElementById('staffEmail').value.trim();
+      const password = document.getElementById('staffPassword').value;
+      const errorMsg = document.getElementById('staffLoginError');
+      const submitBtn = document.getElementById('staffLoginSubmitBtn');
+      errorMsg.style.display = 'none';
+
+      if (!email || !password) {
+        errorMsg.textContent = 'Please enter both email and password.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Checking…';
+
+      const signInResult = await window.firebaseStaffSignIn(email, password);
+      if (!signInResult.success) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign In';
+        errorMsg.textContent = signInResult.message;
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      const role = await window.getStaffRole(signInResult.uid);
+      const allowedRoles = STAFF_ROLE_REQUIREMENTS[staffAuthTargetAction] || [];
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign In';
+
+      if (!role || !allowedRoles.includes(role)) {
+        errorMsg.textContent = 'Your account does not have access to this area.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      document.getElementById('staffLoginModal').classList.remove('show');
+      if (staffAuthTargetAction === 'admindash') renderAdminDashboard();
+      staffAuthTargetAction = null;
+    }
+
     // ── NAVIGATION ────────────────────────────────────────────────────────
     function navTo(tab, btn) {
       document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
@@ -1238,7 +1315,7 @@
         admin: [
           { icon:'📊', label:'Enrollment Returns', sub:'Submit to District Office', fn:"requirePin('enrollment')" },
           { icon:'📋', label:'Forms & Reports', sub:'ED46, RBM, Narratives', fn:"navTo('services', document.getElementById('nav-services'))" },
-          { icon:'🗂️', label:'Admin Dashboard', sub:'Saved data & submissions', fn:"requirePin('admindash')" },
+          { icon:'🗂️', label:'Admin Dashboard', sub:'Saved data & submissions', fn:"requireStaffAuth('admindash')" },
           { icon:'📝', label:'Examinations', sub:'Papers & timetables', fn:"navTo('exams', document.getElementById('nav-exams'))" },
           { icon:'🔔', label:'Notices', sub:'District directives', fn:"navTo('more', document.getElementById('nav-more')); setTimeout(renderNotices,50)" },
           { icon:'🏫', label:'School Directory', sub:'All Zaka schools', fn:"renderDirectory()" },
@@ -1315,7 +1392,7 @@
 
       // Admin Dashboard link for admins
       if (role === 'admin') {
-        html += `<div class="card" style="cursor:pointer; border-left:4px solid #d4af37;" onclick="requirePin('admindash')">
+        html += `<div class="card" style="cursor:pointer; border-left:4px solid #d4af37;" onclick="requireStaffAuth('admindash')">
           <h4>🗂️ Admin Dashboard</h4>
           <p style="margin-bottom:0;">All submissions, forms, and exam confirmations saved on this device — sorted into folders.</p>
           <span style="color:#d4af37; font-weight:700; font-size:0.8rem;">🔒 PIN Required</span>
@@ -1915,6 +1992,54 @@
     updateNavVisibility();
     navTo('home', document.getElementById('nav-home'));
     updateOfflineIndicator();
+  </script>
+
+  <script type="module">
+    // ── FIREBASE AUTH & ROLE CHECK ─────────────────────────────────────
+    // Kept as its own module, separate from the main app script above,
+    // so this piece can be tested/rolled back independently. Exposes a
+    // small set of functions on window for the main script to call.
+    import { auth, db } from "./js/firebase-config.js";
+    import {
+      signInWithEmailAndPassword,
+      setPersistence,
+      browserSessionPersistence
+    } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+    import {
+      doc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+    // Signs in and returns { success, uid } or { success: false, message }.
+    window.firebaseStaffSignIn = async function(email, password) {
+      try {
+        await setPersistence(auth, browserSessionPersistence);
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        return { success: true, uid: result.user.uid };
+      } catch (error) {
+        let message = 'Sign-in failed. Check your connection and try again.';
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+          message = 'Incorrect email or password.';
+        } else if (error.code === 'auth/too-many-requests') {
+          message = 'Too many attempts. Please wait and try again.';
+        }
+        console.error('Staff sign-in error:', error.code, error.message);
+        return { success: false, message };
+      }
+    };
+
+    // Reads staff/{uid} from Firestore and returns the role string, or null
+    // if the document doesn't exist (i.e. this account has no staff role).
+    window.getStaffRole = async function(uid) {
+      try {
+        const snap = await getDoc(doc(db, 'staff', uid));
+        if (!snap.exists()) return null;
+        return snap.data().role || null;
+      } catch (error) {
+        console.error('Role lookup error:', error.code, error.message);
+        return null;
+      }
+    };
   </script>
 </body>
 </html>
