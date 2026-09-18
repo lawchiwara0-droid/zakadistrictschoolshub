@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'zaka-hub-v8-3-learner-gamify';
+const CACHE_VERSION = 'zaka-hub-v8-4-remove-dup-nav';
 const urlsToCache = [
   './',
   './index.html',

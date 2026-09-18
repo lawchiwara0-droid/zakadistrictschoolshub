@@ -94,7 +94,7 @@
       background-color: var(--bg);
       color: var(--text);
       line-height: 1.6;
-      padding-bottom: 60px;
+      padding-bottom: 24px;
     }
 
     header {
@@ -590,16 +590,6 @@
   </header>
 
   <main id="app"></main>
-
-  <nav>
-    <button id="navBtnTeacher" onclick="setActiveNav(this, renderTeacherMode)">📝<br>Teacher</button>
-    <button onclick="setActiveNav(this, renderLearnerMode)">📖<br>Learner</button>
-    <button id="navBtnEnrollment" onclick="setActiveNav(this, renderEnrollmentModeGated)">📊<br>Enrollment</button>
-    <button id="navBtnForms" onclick="setActiveNav(this, renderFormsPortalGated)">📋<br>Forms</button>
-    <button id="navBtnExams" onclick="setActiveNav(this, renderExaminationsGated)">📝<br>Exams</button>
-    <button onclick="setActiveNav(this, renderNotices)">🔔<br>Notices</button>
-    <button class="btn-signout" onclick="signOut()">🚪<br>Out</button>
-  </nav>
 
   <script>
     // ZAKA DISTRICT SCHOOLS DATABASE
@@ -1318,12 +1308,6 @@
       else if (tab === 'more')     renderMoreTab();
     }
 
-    function setActiveNav(button, renderFunc) {
-      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-      if (button) button.classList.add('active');
-      renderFunc();
-    }
-
     function goHome() {
       navTo('home', document.getElementById('nav-home'));
     }
@@ -1343,22 +1327,15 @@
     function updateNavVisibility() {
       const role = getUserRole();
       document.body.classList.toggle('learner-mode', role === 'learner');
-      const teacherBtn = document.getElementById('navBtnTeacher');
-      const enrollmentBtn = document.getElementById('navBtnEnrollment');
-      const formsBtn = document.getElementById('navBtnForms');
-      const examsBtn = document.getElementById('navBtnExams');
-      // Learners see only Learner-relevant tabs; PIN gates still apply
-      // underneath as a backstop, this just keeps the UI honest about
-      // what a Learner should be looking at. Exams is hidden too because
-      // it currently shares real, undistributed exam papers with Teacher —
-      // a paper leaking before it's administered is a genuine integrity
-      // risk, not just a data-tidiness issue. Learners still get exam
-      // timetables via Notices, which is already correctly scoped.
-      const hideForLearner = (role === 'learner') ? 'none' : '';
-      if (teacherBtn) teacherBtn.style.display = hideForLearner;
-      if (enrollmentBtn) enrollmentBtn.style.display = hideForLearner;
-      if (formsBtn) formsBtn.style.display = hideForLearner;
-      if (examsBtn) examsBtn.style.display = hideForLearner;
+      // Note: Teacher/Enrollment/Forms/Exams access for Learners is now
+      // controlled simply by not offering those destinations in the
+      // Learner role's home tiles or Learn tab (see tiles.learner and
+      // renderLearnTab) — not by hiding nav buttons, since the old
+      // persistent bar that needed this was removed as dead-weight
+      // duplication. Exams stays excluded for Learners specifically
+      // because it shares real, undistributed exam papers with
+      // Teacher/Admin — a pre-administration leak risk, not just
+      // data-tidiness. Learners still get exam timetables via Notices.
     }
 
     // ── HOME TAB ──────────────────────────────────────────────────────────
@@ -1936,18 +1913,6 @@
       html += `<button class="btn" style="width:100%; margin-bottom:8px;" onclick="startQuiz(${formNum}, ${index})">🔁 Retry Quiz</button>`;
       html += `<button class="btn btn-secondary" style="width:100%;" onclick="openLessonDetail(${formNum}, ${index})">← Back to Lesson</button>`;
       document.getElementById('app').innerHTML = html;
-    }
-
-    function renderEnrollmentModeGated() {
-      requirePin('enrollment');
-    }
-
-    function renderFormsPortalGated() {
-      requirePin('forms');
-    }
-
-    function renderExaminationsGated() {
-      requirePin('exams');
     }
 
     function renderEnrollmentMode() {
