@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'zaka-hub-v8-1-nac-quiz-notices';
+const CACHE_VERSION = 'zaka-hub-v8-2-learner-quiz-engine';
 const urlsToCache = [
   './',
   './index.html',
