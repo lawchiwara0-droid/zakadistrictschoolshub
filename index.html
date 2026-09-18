@@ -1439,7 +1439,8 @@
     // ── SERVICES TAB ──────────────────────────────────────────────────────
     function renderServicesTab() {
       const role = getUserRole();
-      let html = `<h2>🛠️ Services</h2>
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="goHome()">← Back to Home</button>`;
+      html += `<h2>🛠️ Services</h2>
         <p style="color:var(--text-muted); margin-bottom:12px; font-size:0.9rem;">School administration, returns, HR and official forms — fill offline, share when ready.</p>`;
 
       // ED46 Census — always first (flagship form)
@@ -1500,7 +1501,8 @@
     // ── LEARN TAB ─────────────────────────────────────────────────────────
     function renderLearnTab() {
       const role = getUserRole();
-      let html = `<h2>📚 Learning Centre</h2>
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="goHome()">← Back to Home</button>`;
+      html += `<h2>📚 Learning Centre</h2>
         <p style="color:var(--text-muted); margin-bottom:12px; font-size:0.9rem;">Teaching resources, learner materials and professional tools — all available offline.</p>`;
 
       if (role !== 'learner') {
@@ -1520,7 +1522,8 @@
 
     // ── MORE TAB ──────────────────────────────────────────────────────────
     function renderMoreTab() {
-      let html = `<h2>☰ More</h2>`;
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="goHome()">← Back to Home</button>`;
+      html += `<h2>☰ More</h2>`;
 
       html += `<div class="card" style="cursor:pointer;" onclick="renderNotices()">
         <h4>🔔 District Notices</h4>
@@ -1719,7 +1722,8 @@
 
     function renderTeacherMode() {
       const t = content.teacher;
-      let html = `<h2>${t.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${t.description}</p>`;
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="goHome()">← Back to Home</button>`;
+      html += `<h2>${t.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${t.description}</p>`;
       t.prompts.forEach(p => {
         html += `
           <div class="card">
@@ -1733,7 +1737,8 @@
 
     function renderLearnerMode() {
       const l = content.learner;
-      let html = `<h2>${l.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${l.description}</p>`;
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="goHome()">← Back to Home</button>`;
+      html += `<h2>${l.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${l.description}</p>`;
       Object.keys(l.forms).forEach(f => {
         html += `<h3>Form ${f}</h3>`;
         l.forms[f].topics.forEach((t, i) => {
@@ -1921,7 +1926,8 @@
       const totalBoys = enrollments.reduce((sum, e) => sum + (parseInt(e.boys) || 0), 0);
       const totalGirls = enrollments.reduce((sum, e) => sum + (parseInt(e.girls) || 0), 0);
 
-      let html = `<h2>📊 District Enrollment Statistics</h2>`;
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="goHome()">← Back to Home</button>`;
+      html += `<h2>📊 District Enrollment Statistics</h2>`;
       
       html += `<div class="stats-card"><h4>${totalStudents}</h4><p>Total Enrollment (All Schools)</p></div>`;
       html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">`;
@@ -2017,7 +2023,8 @@
 
     function renderFormsPortal() {
       const f = content.forms;
-      let html = `<h2>${f.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${f.description}</p>`;
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="goHome()">← Back to Home</button>`;
+      html += `<h2>${f.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${f.description}</p>`;
       html += `<div class="card" style="background:#fffaf0; border-color:#f6ad55;">
         <p style="margin-bottom:0; font-size:0.85rem;"><b>How saving works:</b> filling a form and tapping "Save to This Device" stores it only on this phone — it stays here even after closing the app, and nothing is sent anywhere automatically. When you're ready to actually send it, open it below and tap Download PDF (to share the file yourself) or use WhatsApp where that option is offered.</p>
       </div>`;
@@ -2135,7 +2142,8 @@
 
     function renderExaminations() {
       const e = content.examinations;
-      let html = `<h2>${e.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${e.description}</p>`;
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="goHome()">← Back to Home</button>`;
+      html += `<h2>${e.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${e.description}</p>`;
 
       const confirmed = getExamConfirmations();
 
@@ -2186,7 +2194,8 @@
       const visibleItems = (role === 'learner')
         ? n.items.filter(item => item.audience === 'all' || item.audience === 'learner')
         : n.items;
-      let html = `<h2>${n.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${n.description}</p>`;
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="goHome()">← Back to Home</button>`;
+      html += `<h2>${n.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${n.description}</p>`;
       visibleItems.forEach(item => {
         const priorityClass = item.priority === 'High' ? 'badge-high' : 'badge-success';
         html += `

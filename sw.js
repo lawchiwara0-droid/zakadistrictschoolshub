@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'zaka-hub-v8-4-remove-dup-nav';
+const CACHE_VERSION = 'zaka-hub-v8-5-back-buttons';
 const urlsToCache = [
   './',
   './index.html',
