@@ -1231,14 +1231,17 @@
       }
     }
 
-    function requirePin(action) {
-      openPinModal('verify', 'Verify PIN', 'Enter your 4-digit PIN to access this area', action);
-    }
-
-    // ── STAFF FIREBASE LOGIN (real accounts, replacing PIN one area at a time) ──
+    // ── STAFF FIREBASE LOGIN (real accounts) ──────────────────────────
+    // Covers Admin Dashboard, Enrollment, Forms, and Exams. ED46 Census
+    // is the one remaining area still on the shared device PIN (see
+    // openED46() / openPinModal) — a deliberate, separate next step.
     let staffAuthTargetAction = null;
+    let staffAuthPendingCategory = null;
     const STAFF_ROLE_REQUIREMENTS = {
-      admindash: ['admin']  // which roles may proceed, per protected action
+      admindash: ['admin'],       // which roles may proceed, per protected action
+      enrollment: ['admin', 'teacher'],
+      forms: ['admin', 'teacher'],
+      exams: ['admin', 'teacher']
     };
 
     function requireStaffAuth(action) {
@@ -1249,9 +1252,17 @@
       document.getElementById('staffLoginModal').classList.add('show');
     }
 
+    // Same as requireStaffAuth, but remembers which Forms category to jump
+    // straight to on success (used by the Services tab's category cards).
+    function requireStaffAuthForCategory(action, category) {
+      staffAuthPendingCategory = category;
+      requireStaffAuth(action);
+    }
+
     function closeStaffLoginModal() {
       document.getElementById('staffLoginModal').classList.remove('show');
       staffAuthTargetAction = null;
+      staffAuthPendingCategory = null;
     }
 
     async function submitStaffLogin() {
@@ -1288,11 +1299,22 @@
       if (!role || !allowedRoles.includes(role)) {
         errorMsg.textContent = 'Your account does not have access to this area.';
         errorMsg.style.display = 'block';
+        staffAuthPendingCategory = null;
         return;
       }
 
       document.getElementById('staffLoginModal').classList.remove('show');
       if (staffAuthTargetAction === 'admindash') renderAdminDashboard();
+      else if (staffAuthTargetAction === 'enrollment') renderEnrollmentMode();
+      else if (staffAuthTargetAction === 'forms') {
+        if (staffAuthPendingCategory) {
+          renderFormsByCategory(staffAuthPendingCategory);
+          staffAuthPendingCategory = null;
+        } else {
+          renderFormsPortal();
+        }
+      }
+      else if (staffAuthTargetAction === 'exams') renderExaminations();
       staffAuthTargetAction = null;
     }
 
@@ -1304,7 +1326,7 @@
       if (tab === 'home')     renderHome();
       else if (tab === 'services') renderServicesTab();
       else if (tab === 'learn')    renderLearnTab();
-      else if (tab === 'exams')    requirePin('exams');
+      else if (tab === 'exams')    requireStaffAuth('exams');
       else if (tab === 'more')     renderMoreTab();
     }
 
@@ -1367,7 +1389,7 @@
             <span class="role-btn-sub">Heads • HODs • Inspectors • District Officers</span>
           </button>
           <div style="text-align:center; margin-top:20px; padding-top:14px; border-top:1px solid #e2e8f0; width:100%;">
-            <p style="color:#a0aec0; font-size:0.75rem; margin:0;">🔒 PIN protects Enrollment &amp; Forms &nbsp;|&nbsp; Works offline</p>
+            <p style="color:#a0aec0; font-size:0.75rem; margin:0;">🔒 Staff login protects Enrollment, Forms &amp; Exams &nbsp;|&nbsp; Works offline</p>
           </div>
         </div>`;
         document.getElementById('app').innerHTML = html;
@@ -1402,7 +1424,7 @@
           { icon:'🔔', label:'Notices', sub:'School announcements — incl. exam timetables', fn:"navTo('more', document.getElementById('nav-more')); setTimeout(renderNotices,50)" },
         ],
         admin: [
-          { icon:'📊', label:'Enrollment Returns', sub:'Submit to District Office', fn:"requirePin('enrollment')" },
+          { icon:'📊', label:'Enrollment Returns', sub:'Submit to District Office', fn:"requireStaffAuth('enrollment')" },
           { icon:'📋', label:'Forms & Reports', sub:'ED46, RBM, Narratives', fn:"navTo('services', document.getElementById('nav-services'))" },
           { icon:'🗂️', label:'Admin Dashboard', sub:'Saved data & submissions', fn:"requireStaffAuth('admindash')" },
           { icon:'📝', label:'Examinations', sub:'Papers & timetables', fn:"navTo('exams', document.getElementById('nav-exams'))" },
@@ -1453,11 +1475,11 @@
       </div>`;
 
       // Enrollment
-      html += `<div class="card" style="cursor:pointer;" onclick="requirePin('enrollment')">
+      html += `<div class="card" style="cursor:pointer;" onclick="requireStaffAuth('enrollment')">
         <h4>📊 Enrollment Statistics Return</h4>
         <p>Submit termly enrollment data for your school to the District Office via WhatsApp.</p>
         <span class="badge badge-success">School Returns</span>
-        <span style="color:#d4af37; font-weight:700; font-size:0.8rem; margin-left:8px;">🔒 PIN Required</span>
+        <span style="color:var(--primary); font-weight:700; font-size:0.8rem; margin-left:8px;">🔒 Staff Login Required</span>
       </div>`;
 
       // Forms by category
@@ -1473,11 +1495,11 @@
 
       categories.forEach(cat => {
         const forms = content.forms.availableForms.filter(f => f.category === cat);
-        html += `<div class="card" style="cursor:pointer;" onclick="requirePin('forms'); setTimeout(()=>renderFormsByCategory('${cat}'),600)">
+        html += `<div class="card" style="cursor:pointer;" onclick="requireStaffAuthForCategory('forms', '${cat}')">
           <h4>${catIcons[cat]||'📋'} ${cat}</h4>
           <p style="margin-bottom:4px;">${catDesc[cat]||''}</p>
           <p style="color:#718096; font-size:0.8rem; margin-bottom:0;">${forms.map(f=>f.name).join(' • ')}</p>
-          <span style="color:#d4af37; font-weight:700; font-size:0.8rem;">🔒 PIN Required</span>
+          <span style="color:var(--primary); font-weight:700; font-size:0.8rem;">🔒 Staff Login Required</span>
         </div>`;
       });
 
@@ -1486,7 +1508,7 @@
         html += `<div class="card" style="cursor:pointer; border-left:4px solid #d4af37;" onclick="requireStaffAuth('admindash')">
           <h4>🗂️ Admin Dashboard</h4>
           <p style="margin-bottom:0;">All submissions, forms, and exam confirmations saved on this device — sorted into folders.</p>
-          <span style="color:#d4af37; font-weight:700; font-size:0.8rem;">🔒 PIN Required</span>
+          <span style="color:var(--primary); font-weight:700; font-size:0.8rem;">🔒 Staff Login Required</span>
         </div>`;
       }
 
