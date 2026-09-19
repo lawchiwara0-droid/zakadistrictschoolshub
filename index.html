@@ -1314,6 +1314,7 @@
 
     function signOut() {
       localStorage.removeItem(ROLE_KEY);
+      updateNavVisibility();
       navTo('home', document.getElementById('nav-home'));
       window.scrollTo(0, 0);
     }

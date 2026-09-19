@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'zaka-hub-v8-5-back-buttons';
+const CACHE_VERSION = 'zaka-hub-v8-6-signout-theme-fix';
 const urlsToCache = [
   './',
   './index.html',
