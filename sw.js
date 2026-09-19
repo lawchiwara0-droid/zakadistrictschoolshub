@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'zaka-hub-v9-0-firebase-full-migration';
+const CACHE_VERSION = 'zaka-hub-v9-1-leave-form-compositions';
 const urlsToCache = [
   './',
   './index.html',
