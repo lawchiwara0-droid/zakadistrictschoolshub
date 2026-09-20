@@ -1,0 +1,50 @@
+{
+  "title": "Zaka District Support Snapshot",
+  "reportingPeriod": "Term 2, 2026",
+  "lastUpdated": "2026-09-20",
+  "dataStatus": "sample",
+  "submissionsReceived": 37,
+  "schoolsExpected": 42,
+  "indicators": [
+    {
+      "id": "water-access",
+      "label": "Schools reporting a safe water source",
+      "value": 29,
+      "total": 37,
+      "unit": "schools",
+      "description": "Aggregate figure from approved monitoring returns."
+    },
+    {
+      "id": "science-space",
+      "label": "Schools with functional science practical space",
+      "value": 18,
+      "total": 37,
+      "unit": "schools",
+      "description": "Aggregate figure from approved monitoring returns."
+    },
+    {
+      "id": "textbook-needs",
+      "label": "Schools requesting mathematics textbooks",
+      "value": 22,
+      "total": 37,
+      "unit": "schools",
+      "description": "Aggregate figure from approved monitoring returns."
+    },
+    {
+      "id": "ict-needs",
+      "label": "Schools requesting ICT support",
+      "value": 15,
+      "total": 37,
+      "unit": "schools",
+      "description": "Aggregate figure from approved monitoring returns."
+    }
+  ],
+  "priorityAreas": [
+    "Science practical equipment",
+    "Mathematics and English textbooks",
+    "Water and sanitation",
+    "ICT access and connectivity"
+  ],
+  "methodologyNote": "Figures are aggregated from approved school-monitoring returns. No learner, parent, teacher, staff or individual-school personal data is published.",
+  "privacyNote": "This dashboard presents district-level planning information only. It is not a learner record system, school ranking system or official examination database."
+}

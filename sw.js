@@ -1,8 +1,10 @@
-const CACHE_VERSION = 'zaka-hub-v9-2-lit-quizzes-2-3';
+const CACHE_VERSION = 'zaka-hub-v9-3-district-insights';
 const urlsToCache = [
   './',
   './index.html',
   './ed46.html',
+  './district-insights.html',
+  './data/district-summary.json',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
