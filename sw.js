@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'zaka-hub-v9-3-district-insights';
+const CACHE_VERSION = 'zaka-hub-v9-4-alevel-structure';
 const urlsToCache = [
   './',
   './index.html',

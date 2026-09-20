@@ -948,6 +948,12 @@
           }
         }
       },
+      learnerALevel: {
+        forms: {
+          5: { label: "Lower 6", topics: [] },
+          6: { label: "Upper 6", topics: [] }
+        }
+      },
       forms: {
         title: "Administrative & RBM Forms",
         description: "Fill and store school operational records, RBM appraisals, and narrative reports completely offline.",
@@ -1804,10 +1810,47 @@
       document.getElementById('app').innerHTML = html;
     }
 
+    let currentLearnerLevel = 'olevel';
+
+    function setLearnerLevel(level) {
+      currentLearnerLevel = level;
+      renderLearnerMode();
+    }
+
     function renderLearnerMode() {
       const l = content.learner;
       let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="goHome()">← Back to Home</button>`;
       html += `<h2>${l.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${l.description}</p>`;
+
+      html += `<div style="display:flex; gap:8px; margin-bottom:16px;">
+        <button class="btn ${currentLearnerLevel === 'olevel' ? '' : 'btn-secondary'}" style="flex:1;" onclick="setLearnerLevel('olevel')">O-Level (Forms 1-4)</button>
+        <button class="btn ${currentLearnerLevel === 'alevel' ? '' : 'btn-secondary'}" style="flex:1;" onclick="setLearnerLevel('alevel')">A-Level (Lower 6 / Upper 6)</button>
+      </div>`;
+
+      if (currentLearnerLevel === 'alevel') {
+        const al = content.learnerALevel;
+        Object.keys(al.forms).forEach(f => {
+          const topics = al.forms[f].topics;
+          html += `<h3>${al.forms[f].label}</h3>`;
+          if (topics.length === 0) {
+            html += `<div class="card"><p style="color:var(--text-muted); margin-bottom:0;">A-Level content for this level is being built and will appear here soon.</p></div>`;
+          } else {
+            topics.forEach((t, i) => {
+              const hasLesson = !!t.detail;
+              html += `
+                <div class="card" style="cursor:pointer;" onclick="openLessonDetail('${f}', ${i}, 'alevel')">
+                  <h4>📖 ${t.subject}: ${t.name} ${hasLesson ? '<span class="badge badge-success">Full Lesson</span>' : ''}</h4>
+                  <p><b>Notes:</b> ${t.notes}</p>
+                  <p><b>Practice:</b> ${t.practice}</p>
+                  <p style="color:var(--primary); font-weight:600; font-size:0.85rem; margin-bottom:0;">${hasLesson ? 'Tap to open full lesson →' : 'Tap for details →'}</p>
+                </div>`;
+            });
+          }
+        });
+        document.getElementById('app').innerHTML = html;
+        return;
+      }
+
       Object.keys(l.forms).forEach(f => {
         html += `<h3>Form ${f}</h3>`;
         l.forms[f].topics.forEach((t, i) => {
@@ -1824,10 +1867,14 @@
       document.getElementById('app').innerHTML = html;
     }
 
-    function openLessonDetail(formNum, index) {
-      const topic = content.learner.forms[formNum].topics[index];
+    function openLessonDetail(formNum, index, level) {
+      level = level || 'olevel';
+      const topic = (level === 'alevel')
+        ? content.learnerALevel.forms[formNum].topics[index]
+        : content.learner.forms[formNum].topics[index];
+      currentLearnerLevel = level;
       let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="renderLearnerMode()">← Back to Learner Portal</button>`;
-      html += `<h2>${topic.subject}: ${topic.name}</h2><p style="color:var(--text-muted); margin-bottom:12px;">Form ${formNum}</p>`;
+      html += `<h2>${topic.subject}: ${topic.name}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${level === 'alevel' ? content.learnerALevel.forms[formNum].label : 'Form ' + formNum}</p>`;
 
       if (topic.detail) {
         html += `<div class="card"><h4>📘 Explanation</h4><p>${topic.detail.explanation}</p></div>`;
@@ -1852,7 +1899,7 @@
       }
 
       if (topic.quiz) {
-        html += `<button class="btn" style="width:100%; margin-top:8px;" onclick="startQuiz(${formNum}, ${index})">📝 Start Quiz: ${topic.quiz.title.replace('Quick Quiz: ', '')}</button>`;
+        html += `<button class="btn" style="width:100%; margin-top:8px;" onclick="startQuiz('${formNum}', ${index}, '${level}')">📝 Start Quiz: ${topic.quiz.title.replace('Quick Quiz: ', '')}</button>`;
       }
 
       document.getElementById('app').innerHTML = html;
@@ -1873,16 +1920,19 @@
 
     let quizState = null;
 
-    function startQuiz(formNum, index) {
-      const quiz = content.learner.forms[formNum].topics[index].quiz;
-      quizState = { formNum, index, quiz, current: 0, score: 0, answered: false, streak: 0, pointsEarned: 0 };
+    function startQuiz(formNum, index, level) {
+      level = level || 'olevel';
+      const quiz = (level === 'alevel')
+        ? content.learnerALevel.forms[formNum].topics[index].quiz
+        : content.learner.forms[formNum].topics[index].quiz;
+      quizState = { formNum, index, level, quiz, current: 0, score: 0, answered: false, streak: 0, pointsEarned: 0 };
       renderQuizQuestion();
     }
 
     function renderQuizQuestion() {
       const { quiz, current } = quizState;
       const q = quiz.questions[current];
-      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="openLessonDetail(${quizState.formNum}, ${quizState.index})">← Back to Lesson</button>`;
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="openLessonDetail('${quizState.formNum}', ${quizState.index}, '${quizState.level}')">← Back to Lesson</button>`;
       html += `<h2>📝 ${quiz.title}</h2>`;
       html += `<p style="color:var(--text-muted); margin-bottom:10px;">Question ${current + 1} of ${quiz.questions.length}</p>`;
       if (quizState.streak >= 2) {
@@ -1963,7 +2013,7 @@
     }
 
     function renderQuizScore() {
-      const { quiz, score, formNum, index, pointsEarned } = quizState;
+      const { quiz, score, formNum, index, level, pointsEarned } = quizState;
       const total = quiz.questions.length;
       const ratio = score / total;
       let feedback, stars;
@@ -1984,8 +2034,8 @@
         <div class="points-badge">✨ +${pointsEarned} points this quiz · ${getLearnerPoints()} total</div>
         <p style="font-size:0.75rem; color:var(--text-muted); font-style:italic;">Personal practice record — this is not an official school mark.</p>
       </div>`;
-      html += `<button class="btn" style="width:100%; margin-bottom:8px;" onclick="startQuiz(${formNum}, ${index})">🔁 Retry Quiz</button>`;
-      html += `<button class="btn btn-secondary" style="width:100%;" onclick="openLessonDetail(${formNum}, ${index})">← Back to Lesson</button>`;
+      html += `<button class="btn" style="width:100%; margin-bottom:8px;" onclick="startQuiz('${formNum}', ${index}, '${level}')">🔁 Retry Quiz</button>`;
+      html += `<button class="btn btn-secondary" style="width:100%;" onclick="openLessonDetail('${formNum}', ${index}, '${level}')">← Back to Lesson</button>`;
       document.getElementById('app').innerHTML = html;
     }
 
