@@ -950,8 +950,16 @@
       },
       learnerALevel: {
         forms: {
-          5: { label: "Lower 6", topics: [] },
-          6: { label: "Upper 6", topics: [] }
+          5: { label: "Lower 6", departments: {
+            Sciences: { topics: [] },
+            Arts: { topics: [] },
+            Commercials: { topics: [] }
+          }},
+          6: { label: "Upper 6", departments: {
+            Sciences: { topics: [] },
+            Arts: { topics: [] },
+            Commercials: { topics: [] }
+          }}
         }
       },
       forms: {
@@ -1811,9 +1819,21 @@
     }
 
     let currentLearnerLevel = 'olevel';
+    let currentALevelYear = '5';
+    let currentALevelDept = 'Sciences';
 
     function setLearnerLevel(level) {
       currentLearnerLevel = level;
+      renderLearnerMode();
+    }
+
+    function setALevelYear(year) {
+      currentALevelYear = year;
+      renderLearnerMode();
+    }
+
+    function setALevelDept(dept) {
+      currentALevelDept = dept;
       renderLearnerMode();
     }
 
@@ -1829,24 +1849,36 @@
 
       if (currentLearnerLevel === 'alevel') {
         const al = content.learnerALevel;
+
+        html += `<div style="display:flex; gap:8px; margin-bottom:12px;">`;
         Object.keys(al.forms).forEach(f => {
-          const topics = al.forms[f].topics;
-          html += `<h3>${al.forms[f].label}</h3>`;
-          if (topics.length === 0) {
-            html += `<div class="card"><p style="color:var(--text-muted); margin-bottom:0;">A-Level content for this level is being built and will appear here soon.</p></div>`;
-          } else {
-            topics.forEach((t, i) => {
-              const hasLesson = !!t.detail;
-              html += `
-                <div class="card" style="cursor:pointer;" onclick="openLessonDetail('${f}', ${i}, 'alevel')">
-                  <h4>📖 ${t.subject}: ${t.name} ${hasLesson ? '<span class="badge badge-success">Full Lesson</span>' : ''}</h4>
-                  <p><b>Notes:</b> ${t.notes}</p>
-                  <p><b>Practice:</b> ${t.practice}</p>
-                  <p style="color:var(--primary); font-weight:600; font-size:0.85rem; margin-bottom:0;">${hasLesson ? 'Tap to open full lesson →' : 'Tap for details →'}</p>
-                </div>`;
-            });
-          }
+          html += `<button class="btn ${currentALevelYear === f ? '' : 'btn-secondary'}" style="flex:1;" onclick="setALevelYear('${f}')">${al.forms[f].label}</button>`;
         });
+        html += `</div>`;
+
+        const depts = al.forms[currentALevelYear].departments;
+        html += `<div style="display:flex; gap:8px; margin-bottom:16px;">`;
+        Object.keys(depts).forEach(d => {
+          html += `<button class="btn ${currentALevelDept === d ? '' : 'btn-secondary'}" style="flex:1; font-size:0.85rem;" onclick="setALevelDept('${d}')">${d}</button>`;
+        });
+        html += `</div>`;
+
+        const topics = depts[currentALevelDept].topics;
+        html += `<h3>${al.forms[currentALevelYear].label} — ${currentALevelDept}</h3>`;
+        if (topics.length === 0) {
+          html += `<div class="card"><p style="color:var(--text-muted); margin-bottom:0;">${currentALevelDept} content for ${al.forms[currentALevelYear].label} is being built and will appear here soon.</p></div>`;
+        } else {
+          topics.forEach((t, i) => {
+            const hasLesson = !!t.detail;
+            html += `
+              <div class="card" style="cursor:pointer;" onclick="openLessonDetail('${currentALevelYear}', ${i}, 'alevel', '${currentALevelDept}')">
+                <h4>📖 ${t.subject}: ${t.name} ${hasLesson ? '<span class="badge badge-success">Full Lesson</span>' : ''}</h4>
+                <p><b>Notes:</b> ${t.notes}</p>
+                <p><b>Practice:</b> ${t.practice}</p>
+                <p style="color:var(--primary); font-weight:600; font-size:0.85rem; margin-bottom:0;">${hasLesson ? 'Tap to open full lesson →' : 'Tap for details →'}</p>
+              </div>`;
+          });
+        }
         document.getElementById('app').innerHTML = html;
         return;
       }
@@ -1867,14 +1899,15 @@
       document.getElementById('app').innerHTML = html;
     }
 
-    function openLessonDetail(formNum, index, level) {
+    function openLessonDetail(formNum, index, level, dept) {
       level = level || 'olevel';
       const topic = (level === 'alevel')
-        ? content.learnerALevel.forms[formNum].topics[index]
+        ? content.learnerALevel.forms[formNum].departments[dept].topics[index]
         : content.learner.forms[formNum].topics[index];
       currentLearnerLevel = level;
+      if (level === 'alevel') { currentALevelYear = formNum; currentALevelDept = dept; }
       let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="renderLearnerMode()">← Back to Learner Portal</button>`;
-      html += `<h2>${topic.subject}: ${topic.name}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${level === 'alevel' ? content.learnerALevel.forms[formNum].label : 'Form ' + formNum}</p>`;
+      html += `<h2>${topic.subject}: ${topic.name}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${level === 'alevel' ? content.learnerALevel.forms[formNum].label + ' — ' + dept : 'Form ' + formNum}</p>`;
 
       if (topic.detail) {
         html += `<div class="card"><h4>📘 Explanation</h4><p>${topic.detail.explanation}</p></div>`;
@@ -1899,7 +1932,7 @@
       }
 
       if (topic.quiz) {
-        html += `<button class="btn" style="width:100%; margin-top:8px;" onclick="startQuiz('${formNum}', ${index}, '${level}')">📝 Start Quiz: ${topic.quiz.title.replace('Quick Quiz: ', '')}</button>`;
+        html += `<button class="btn" style="width:100%; margin-top:8px;" onclick="startQuiz('${formNum}', ${index}, '${level}', '${dept || ''}')">📝 Start Quiz: ${topic.quiz.title.replace('Quick Quiz: ', '')}</button>`;
       }
 
       document.getElementById('app').innerHTML = html;
@@ -1920,19 +1953,19 @@
 
     let quizState = null;
 
-    function startQuiz(formNum, index, level) {
+    function startQuiz(formNum, index, level, dept) {
       level = level || 'olevel';
       const quiz = (level === 'alevel')
-        ? content.learnerALevel.forms[formNum].topics[index].quiz
+        ? content.learnerALevel.forms[formNum].departments[dept].topics[index].quiz
         : content.learner.forms[formNum].topics[index].quiz;
-      quizState = { formNum, index, level, quiz, current: 0, score: 0, answered: false, streak: 0, pointsEarned: 0 };
+      quizState = { formNum, index, level, dept, quiz, current: 0, score: 0, answered: false, streak: 0, pointsEarned: 0 };
       renderQuizQuestion();
     }
 
     function renderQuizQuestion() {
       const { quiz, current } = quizState;
       const q = quiz.questions[current];
-      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="openLessonDetail('${quizState.formNum}', ${quizState.index}, '${quizState.level}')">← Back to Lesson</button>`;
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="openLessonDetail('${quizState.formNum}', ${quizState.index}, '${quizState.level}', '${quizState.dept || ''}')">← Back to Lesson</button>`;
       html += `<h2>📝 ${quiz.title}</h2>`;
       html += `<p style="color:var(--text-muted); margin-bottom:10px;">Question ${current + 1} of ${quiz.questions.length}</p>`;
       if (quizState.streak >= 2) {
@@ -2013,7 +2046,7 @@
     }
 
     function renderQuizScore() {
-      const { quiz, score, formNum, index, level, pointsEarned } = quizState;
+      const { quiz, score, formNum, index, level, dept, pointsEarned } = quizState;
       const total = quiz.questions.length;
       const ratio = score / total;
       let feedback, stars;
@@ -2034,8 +2067,8 @@
         <div class="points-badge">✨ +${pointsEarned} points this quiz · ${getLearnerPoints()} total</div>
         <p style="font-size:0.75rem; color:var(--text-muted); font-style:italic;">Personal practice record — this is not an official school mark.</p>
       </div>`;
-      html += `<button class="btn" style="width:100%; margin-bottom:8px;" onclick="startQuiz('${formNum}', ${index}, '${level}')">🔁 Retry Quiz</button>`;
-      html += `<button class="btn btn-secondary" style="width:100%;" onclick="openLessonDetail('${formNum}', ${index}, '${level}')">← Back to Lesson</button>`;
+      html += `<button class="btn" style="width:100%; margin-bottom:8px;" onclick="startQuiz('${formNum}', ${index}, '${level}', '${dept || ''}')">🔁 Retry Quiz</button>`;
+      html += `<button class="btn btn-secondary" style="width:100%;" onclick="openLessonDetail('${formNum}', ${index}, '${level}', '${dept || ''}')">← Back to Lesson</button>`;
       document.getElementById('app').innerHTML = html;
     }
 
