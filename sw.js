@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'zaka-hub-v9-1-leave-form-compositions';
+const CACHE_VERSION = 'zaka-hub-v9-2-lit-quizzes-2-3';
 const urlsToCache = [
   './',
   './index.html',
