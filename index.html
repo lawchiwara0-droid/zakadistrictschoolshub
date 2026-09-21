@@ -83,6 +83,95 @@
       margin-bottom: 14px;
     }
 
+    /* ── Progress Pal: a stickman that visually grows as quizzes are completed ── */
+    .stickman-stage {
+      position: relative;
+      width: 140px;
+      height: 200px;
+      margin: 10px auto 6px;
+    }
+    .sm-head {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--primary);
+      position: absolute; top: 6px; left: 50%;
+      transform: translateX(-50%);
+      transition: all 0.3s ease;
+    }
+    .sm-body {
+      width: 5px; height: 64px;
+      background: var(--primary);
+      position: absolute; top: 50px; left: 50%;
+      transform: translateX(-50%);
+    }
+    .sm-arm-l, .sm-arm-r {
+      width: 5px; height: 42px;
+      background: var(--primary);
+      position: absolute; top: 58px; left: 50%;
+      transform-origin: top;
+      border-radius: 3px;
+    }
+    .sm-arm-l { transform: translateX(-50%) rotate(-32deg); }
+    .sm-arm-r { transform: translateX(-50%) rotate(32deg); }
+    .sm-leg-l, .sm-leg-r {
+      width: 5px; height: 54px;
+      background: var(--primary);
+      position: absolute; top: 112px; left: 50%;
+      transform-origin: top;
+      border-radius: 3px;
+    }
+    .sm-leg-l { transform: translateX(-50%) rotate(-18deg); }
+    .sm-leg-r { transform: translateX(-50%) rotate(18deg); }
+    .sm-accessory {
+      position: absolute;
+      font-size: 1.6rem;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.4s ease;
+    }
+    .sm-accessory.show { opacity: 1; transform: scale(1); }
+    .sm-hat { top: -20px; left: 50%; transform: translateX(-50%) scale(0.5); font-size: 1.8rem; }
+    .sm-hat.show { transform: translateX(-50%) scale(1); }
+    .sm-glasses { top: 12px; left: 50%; transform: translateX(-50%) scale(0.5); font-size: 1.3rem; }
+    .sm-glasses.show { transform: translateX(-50%) scale(1); }
+    .sm-backpack { top: 48px; left: 18px; }
+    .sm-medal { top: 60px; left: 50%; transform: translateX(-50%) scale(0.5); font-size: 1.4rem; z-index: 2; }
+    .sm-medal.show { transform: translateX(-50%) scale(1); }
+    .sm-crown { top: -34px; left: 50%; transform: translateX(-50%) scale(0.5); font-size: 1.9rem; }
+    .sm-crown.show { transform: translateX(-50%) scale(1); }
+    .sm-sparkle-l { top: 20px; left: -6px; font-size: 1.2rem; }
+    .sm-sparkle-r { top: 20px; right: -6px; font-size: 1.2rem; }
+    .progress-stage-name {
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    .progress-stage-sub {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+    .milestone-track {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .milestone-track li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 4px;
+      border-bottom: 1px solid #eef0f2;
+      font-size: 0.9rem;
+    }
+    .milestone-track li:last-child { border-bottom: none; }
+    .milestone-track .m-icon { font-size: 1.3rem; width: 28px; text-align: center; }
+    .milestone-track li.locked { opacity: 0.4; }
+    .milestone-track li.current { font-weight: 700; color: var(--primary); }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -1481,6 +1570,7 @@
         ],
         learner: [
           { icon:'📚', label:'Learning Centre', sub:'Notes, lessons, quizzes', fn:"navTo('learn', document.getElementById('nav-learn'))" },
+          { icon:'🎮', label:'Progress Pal', sub:'Watch your stickman grow', fn:"renderProgressPal()" },
           { icon:'🔔', label:'Notices', sub:'School announcements — incl. exam timetables', fn:"navTo('more', document.getElementById('nav-more')); setTimeout(renderNotices,50)" },
         ],
         admin: [
@@ -1960,6 +2050,80 @@
       return total;
     }
 
+    // ── PROGRESS PAL: a stickman that grows as quizzes are completed ────
+    const QUIZZES_DONE_KEY = 'zaka_learner_quizzes_completed';
+    function getQuizzesCompleted() { return parseInt(localStorage.getItem(QUIZZES_DONE_KEY) || '0', 10); }
+    function incrementQuizzesCompleted() {
+      const total = getQuizzesCompleted() + 1;
+      localStorage.setItem(QUIZZES_DONE_KEY, total.toString());
+      return total;
+    }
+
+    // Each stage unlocks at a quiz-completion threshold. accessories lists
+    // which sm-* accessory classes get the "show" state at this stage.
+    const PROGRESS_STAGES = [
+      { threshold: 0,  name: "New Recruit",   sub: "Every scholar starts somewhere — complete your first quiz!", icon: "🧍", accessories: [] },
+      { threshold: 1,  name: "Getting Started", sub: "You're off! Keep the momentum going.", icon: "🎒", accessories: ['backpack'] },
+      { threshold: 3,  name: "On a Roll",      sub: "Consistent practice is paying off.", icon: "🎓", accessories: ['backpack', 'hat'] },
+      { threshold: 5,  name: "Sharp Mind",     sub: "Your focus is sharpening nicely.", icon: "👓", accessories: ['backpack', 'hat', 'glasses'] },
+      { threshold: 8,  name: "Star Learner",   sub: "Recognised effort — well earned.", icon: "🏅", accessories: ['backpack', 'hat', 'glasses', 'medal'] },
+      { threshold: 12, name: "Zaka Scholar",   sub: "Top-tier dedication. Keep shining!", icon: "👑", accessories: ['backpack', 'hat', 'glasses', 'medal', 'crown', 'sparkle'] }
+    ];
+
+    function getCurrentStageIndex(quizzesDone) {
+      let idx = 0;
+      for (let i = 0; i < PROGRESS_STAGES.length; i++) {
+        if (quizzesDone >= PROGRESS_STAGES[i].threshold) idx = i;
+      }
+      return idx;
+    }
+
+    function renderProgressPal() {
+      const quizzesDone = getQuizzesCompleted();
+      const points = getLearnerPoints();
+      const stageIdx = getCurrentStageIndex(quizzesDone);
+      const stage = PROGRESS_STAGES[stageIdx];
+      const nextStage = PROGRESS_STAGES[stageIdx + 1];
+      const has = (acc) => stage.accessories.includes(acc) ? 'show' : '';
+
+      let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="goHome()">← Back to Home</button>`;
+      html += `<h2>🎮 Progress Pal</h2><p style="color:var(--text-muted); margin-bottom:12px;">Your stickman grows as you complete quizzes — a fun way to track your own progress.</p>`;
+
+      html += `<div class="card" style="text-align:center;">
+        <div class="stickman-stage">
+          <div class="sm-accessory sm-hat ${has('hat')}">🎓</div>
+          <div class="sm-accessory sm-crown ${has('crown')}">👑</div>
+          <div class="sm-head"></div>
+          <div class="sm-accessory sm-glasses ${has('glasses')}">👓</div>
+          <div class="sm-body"></div>
+          <div class="sm-arm-l"></div>
+          <div class="sm-arm-r"></div>
+          <div class="sm-accessory sm-backpack ${has('backpack')}">🎒</div>
+          <div class="sm-accessory sm-medal ${has('medal')}">🏅</div>
+          <div class="sm-leg-l"></div>
+          <div class="sm-leg-r"></div>
+          <div class="sm-accessory sm-sparkle-l ${has('sparkle')}">✨</div>
+          <div class="sm-accessory sm-sparkle-r ${has('sparkle')}">✨</div>
+        </div>
+        <p class="progress-stage-name">${stage.icon} ${stage.name}</p>
+        <p class="progress-stage-sub">${stage.sub}</p>
+        <div class="points-badge">✨ ${points} points · ${quizzesDone} quiz${quizzesDone === 1 ? '' : 'zes'} completed</div>
+        ${nextStage ? `<p style="font-size:0.85rem; color:var(--text-muted); margin-top:8px;">Complete ${nextStage.threshold - quizzesDone} more quiz${(nextStage.threshold - quizzesDone) === 1 ? '' : 'zes'} to reach <b>${nextStage.name}</b> ${nextStage.icon}</p>` : `<p style="font-size:0.85rem; color:var(--success); font-weight:700; margin-top:8px;">🎉 You've reached the top stage!</p>`}
+      </div>`;
+
+      html += `<div class="card"><h4 style="margin-bottom:8px;">Milestone Roadmap</h4><ul class="milestone-track">`;
+      PROGRESS_STAGES.forEach((s, i) => {
+        const state = i < stageIdx ? '' : i === stageIdx ? 'current' : 'locked';
+        const statusText = i < stageIdx ? 'Completed' : i === stageIdx ? 'Current stage' : `Unlocks at ${s.threshold} quiz${s.threshold === 1 ? '' : 'zes'}`;
+        html += `<li class="${state}"><span class="m-icon">${i <= stageIdx ? s.icon : '🔒'}</span><span>${s.name} — <span style="color:var(--text-muted); font-weight:400;">${statusText}</span></span></li>`;
+      });
+      html += `</ul></div>`;
+
+      html += `<p style="font-size:0.75rem; color:var(--text-muted); text-align:center; font-style:italic;">Personal progress tracker — not an official school record.</p>`;
+
+      document.getElementById('app').innerHTML = html;
+    }
+
     let quizState = null;
 
     function startQuiz(formNum, index, level, dept) {
@@ -2058,6 +2222,7 @@
       const { quiz, score, formNum, index, level, dept, pointsEarned } = quizState;
       const total = quiz.questions.length;
       const ratio = score / total;
+      const quizzesDoneNow = incrementQuizzesCompleted();
       let feedback, stars;
       if (ratio <= 0.4) { feedback = "Keep practising. Revisit the lesson notes and try again."; stars = 1; }
       else if (ratio < 0.85) { feedback = "Good effort. Review the questions you missed and try again."; stars = 2; }
@@ -2069,6 +2234,20 @@
       }
 
       let html = `<h2>📝 Quiz Complete</h2>`;
+
+      // Did this completion just cross into a new Progress Pal stage?
+      const stageBefore = getCurrentStageIndex(quizzesDoneNow - 1);
+      const stageAfter = getCurrentStageIndex(quizzesDoneNow);
+      if (stageAfter > stageBefore) {
+        const newStage = PROGRESS_STAGES[stageAfter];
+        html += `<div class="card celebrate-pop" style="text-align:center; background:var(--primary-tint); border:2px solid var(--secondary);">
+          <p style="font-size:1.6rem; margin-bottom:4px;">${newStage.icon}</p>
+          <p style="font-weight:700; color:var(--primary); margin-bottom:2px;">New milestone unlocked!</p>
+          <p style="font-size:0.9rem; margin-bottom:8px;">Your Progress Pal is now a <b>${newStage.name}</b></p>
+          <button class="btn" style="width:100%;" onclick="renderProgressPal()">🎮 See Progress Pal</button>
+        </div>`;
+      }
+
       html += `<div class="card" style="text-align:center;">
         <div class="star-rating" style="margin-bottom:6px;">${starsHtml}</div>
         <p style="font-size:2rem; font-weight:700; color:var(--primary); margin-bottom:4px;">${score} / ${total}</p>
