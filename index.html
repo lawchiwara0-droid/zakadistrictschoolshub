@@ -1843,8 +1843,8 @@
       html += `<h2>${l.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${l.description}</p>`;
 
       html += `<div style="display:flex; gap:8px; margin-bottom:16px;">
-        <button class="btn ${currentLearnerLevel === 'olevel' ? '' : 'btn-secondary'}" style="flex:1;" onclick="setLearnerLevel('olevel')">O-Level (Forms 1-4)</button>
-        <button class="btn ${currentLearnerLevel === 'alevel' ? '' : 'btn-secondary'}" style="flex:1;" onclick="setLearnerLevel('alevel')">A-Level (Lower 6 / Upper 6)</button>
+        <button class="btn ${currentLearnerLevel === 'olevel' ? '' : 'btn-secondary'}" style="flex:1;" onclick="setLearnerLevel('olevel')">📕 O-Level (Forms 1-4)</button>
+        <button class="btn ${currentLearnerLevel === 'alevel' ? '' : 'btn-secondary'}" style="flex:1;" onclick="setLearnerLevel('alevel')">🎓 A-Level (Lower 6 / Upper 6)</button>
       </div>`;
 
       if (currentLearnerLevel === 'alevel') {
@@ -1852,21 +1852,26 @@
 
         html += `<div style="display:flex; gap:8px; margin-bottom:12px;">`;
         Object.keys(al.forms).forEach(f => {
-          html += `<button class="btn ${currentALevelYear === f ? '' : 'btn-secondary'}" style="flex:1;" onclick="setALevelYear('${f}')">${al.forms[f].label}</button>`;
+          html += `<button class="btn ${currentALevelYear === f ? '' : 'btn-secondary'}" style="flex:1;" onclick="setALevelYear('${f}')">${f === '5' ? '1️⃣' : '2️⃣'} ${al.forms[f].label}</button>`;
         });
         html += `</div>`;
 
         const depts = al.forms[currentALevelYear].departments;
+        const deptIcons = { Sciences: '🔬', Arts: '🎭', Commercials: '💼' };
         html += `<div style="display:flex; gap:8px; margin-bottom:16px;">`;
         Object.keys(depts).forEach(d => {
-          html += `<button class="btn ${currentALevelDept === d ? '' : 'btn-secondary'}" style="flex:1; font-size:0.85rem;" onclick="setALevelDept('${d}')">${d}</button>`;
+          html += `<button class="btn ${currentALevelDept === d ? '' : 'btn-secondary'}" style="flex:1; font-size:0.85rem;" onclick="setALevelDept('${d}')">${deptIcons[d] || '📘'} ${d}</button>`;
         });
         html += `</div>`;
 
         const topics = depts[currentALevelDept].topics;
-        html += `<h3>${al.forms[currentALevelYear].label} — ${currentALevelDept}</h3>`;
+        html += `<h3>${deptIcons[currentALevelDept] || '📘'} ${al.forms[currentALevelYear].label} — ${currentALevelDept}</h3>`;
         if (topics.length === 0) {
-          html += `<div class="card"><p style="color:var(--text-muted); margin-bottom:0;">${currentALevelDept} content for ${al.forms[currentALevelYear].label} is being built and will appear here soon.</p></div>`;
+          html += `<div class="card" style="text-align:center; padding:24px 16px;">
+            <div style="font-size:2rem; margin-bottom:8px;">🚧</div>
+            <p style="font-weight:600; margin-bottom:4px;">${currentALevelDept} lessons for ${al.forms[currentALevelYear].label} are on the way</p>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:0;">Check back soon, or explore another department in the meantime.</p>
+          </div>`;
         } else {
           topics.forEach((t, i) => {
             const hasLesson = !!t.detail;
