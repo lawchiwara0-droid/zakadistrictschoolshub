@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'zaka-hub-v9-6-alevel-polish';
+const CACHE_VERSION = 'zaka-hub-v9-7-mention-alevel';
 const urlsToCache = [
   './',
   './index.html',
