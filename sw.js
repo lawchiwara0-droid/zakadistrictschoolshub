@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'zaka-hub-v10-0-teacher-ai-copilot';
+const CACHE_VERSION = 'zaka-hub-v10-1-ai-export';
 const urlsToCache = [
   './',
   './index.html',

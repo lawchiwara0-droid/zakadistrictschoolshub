@@ -2136,6 +2136,8 @@
     const GEMINI_API_KEY = 'AQ.Ab8RN6J4sq6lFEClnf_JOsC64Stk5Sq0EswlI8EfCfSpunb2HA';
     const GEMINI_MODEL = 'gemini-2.5-flash';
 
+    const aiResponses = {}; // promptIndex -> last AI response text, for export actions
+
     async function askAI(promptIndex) {
       const p = content.teacher.prompts[promptIndex];
       const btn = document.getElementById('aiBtn' + promptIndex);
@@ -2144,7 +2146,7 @@
       btn.disabled = true;
       btn.textContent = '🤖 Thinking…';
       responseBox.style.display = 'block';
-      responseBox.textContent = 'Contacting AI… this can take a few seconds, especially on slower connections.';
+      responseBox.innerHTML = 'Contacting AI… this can take a few seconds, especially on slower connections.';
 
       try {
         const res = await fetch(
@@ -2168,7 +2170,17 @@
           : null;
 
         if (!text) throw new Error('No response content');
-        responseBox.textContent = text;
+        aiResponses[promptIndex] = text;
+
+        responseBox.innerHTML = `
+          <div id="aiResponseText${promptIndex}" style="white-space:pre-wrap; margin-bottom:10px;"></div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button class="btn btn-secondary" style="flex:1; font-size:0.8rem; padding:8px;" onclick="copyAIResponse(${promptIndex})">📋 Copy</button>
+            <button class="btn btn-secondary" style="flex:1; font-size:0.8rem; padding:8px;" onclick="saveAIResponsePDF(${promptIndex}, '${p.name.replace(/'/g, "\\'")}')">📄 PDF</button>
+            <button class="btn btn-secondary" style="flex:1; font-size:0.8rem; padding:8px;" onclick="saveAIResponseWord(${promptIndex}, '${p.name.replace(/'/g, "\\'")}')">📝 Word</button>
+          </div>`;
+        // Set via textContent (not innerHTML) so AI output can never inject markup.
+        document.getElementById('aiResponseText' + promptIndex).textContent = text;
       } catch (error) {
         console.error('AI request error:', error);
         responseBox.textContent = '⚠️ AI response unavailable right now. Check your internet connection and try again — or use "Copy" and paste the prompt into your usual AI app instead.';
@@ -2176,6 +2188,59 @@
         btn.disabled = false;
         btn.textContent = '🤖 Ask AI';
       }
+    }
+
+    function copyAIResponse(promptIndex) {
+      const text = aiResponses[promptIndex];
+      if (!text) return;
+      navigator.clipboard.writeText(text);
+      alert('AI response copied!');
+    }
+
+    function saveAIResponsePDF(promptIndex, title) {
+      const text = aiResponses[promptIndex];
+      if (!text) return;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFillColor(15, 61, 46);
+      doc.rect(0, 0, 210, 30, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(14);
+      doc.text('ZAKA DISTRICT SCHOOLS HUB — AI Copilot', 105, 12, { align: 'center' });
+      doc.setFontSize(11);
+      doc.text(title, 105, 22, { align: 'center' });
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(10);
+      const lines = doc.splitTextToSize(text, 170);
+      let y = 45;
+      lines.forEach(line => {
+        if (y > 280) { doc.addPage(); y = 20; }
+        doc.text(line, 20, y);
+        y += 6;
+      });
+      doc.save(`${title.replace(/[^a-z0-9]/gi, '_')}.pdf`);
+    }
+
+    function saveAIResponseWord(promptIndex, title) {
+      const text = aiResponses[promptIndex];
+      if (!text) return;
+      // Lightweight Word-compatible export: an HTML document with a .doc
+      // extension, which Word/mobile office apps open directly — avoids
+      // pulling in a heavy docx-generation library for this one feature.
+      const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+      const htmlDoc = `<html><head><meta charset="utf-8"><title>${title}</title></head>
+        <body style="font-family:Calibri,Arial,sans-serif;">
+          <h2 style="color:#0f3d2e;">Zaka District Schools Hub — AI Copilot</h2>
+          <h3>${title}</h3>
+          <p>${escaped}</p>
+        </body></html>`;
+      const blob = new Blob(['\ufeff', htmlDoc], { type: 'application/msword' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${title.replace(/[^a-z0-9]/gi, '_')}.doc`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     let quizState = null;
