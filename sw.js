@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'zaka-hub-v9-7-mention-alevel';
+const CACHE_VERSION = 'zaka-hub-v9-8-leave-form-ecblock';
 const urlsToCache = [
   './',
   './index.html',
