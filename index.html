@@ -1901,12 +1901,16 @@
       const t = content.teacher;
       let html = `<button class="btn btn-secondary" style="margin-bottom:12px;" onclick="goHome()">← Back to Home</button>`;
       html += `<h2>${t.title}</h2><p style="color:var(--text-muted); margin-bottom:12px;">${t.description}</p>`;
-      t.prompts.forEach(p => {
+      t.prompts.forEach((p, i) => {
         html += `
           <div class="card">
             <h4>${p.name}</h4>
             <p style="background:#f7fafc; padding:10px; border-left:3px solid var(--secondary); font-size:0.9rem; font-style:italic;">"${p.text.replace(/"/g, '&quot;')}"</p>
-            <button class="btn" style="margin-top:8px; width:100%;" onclick="navigator.clipboard.writeText('${p.text.replace(/'/g, "\\'")}'); alert('Prompt copied!')">📋 Copy Prompt</button>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <button class="btn btn-secondary" style="flex:1;" onclick="navigator.clipboard.writeText('${p.text.replace(/'/g, "\\'")}'); alert('Prompt copied!')">📋 Copy</button>
+              <button class="btn" style="flex:1;" id="aiBtn${i}" onclick="askAI(${i})">🤖 Ask AI</button>
+            </div>
+            <div id="aiResponse${i}" style="display:none; margin-top:10px; padding:12px; background:var(--primary-tint); border-radius:8px; font-size:0.9rem; white-space:pre-wrap;"></div>
           </div>`;
       });
       document.getElementById('app').innerHTML = html;
@@ -2122,6 +2126,56 @@
       html += `<p style="font-size:0.75rem; color:var(--text-muted); text-align:center; font-style:italic;">Personal progress tracker — not an official school record.</p>`;
 
       document.getElementById('app').innerHTML = html;
+    }
+
+    // ── TEACHER AI COPILOT (direct Gemini call, free tier) ───────────────
+    // This key is intentionally public-facing (client-side call, no
+    // backend) — a deliberate tradeoff to stay on Firebase's free Spark
+    // plan. It's rate-limited on Google's side; see project notes for
+    // context. Never put a paid-tier key here.
+    const GEMINI_API_KEY = 'AQ.Ab8RN6J4sq6lFEClnf_JOsC64Stk5Sq0EswlI8EfCfSpunb2HA';
+    const GEMINI_MODEL = 'gemini-2.5-flash';
+
+    async function askAI(promptIndex) {
+      const p = content.teacher.prompts[promptIndex];
+      const btn = document.getElementById('aiBtn' + promptIndex);
+      const responseBox = document.getElementById('aiResponse' + promptIndex);
+
+      btn.disabled = true;
+      btn.textContent = '🤖 Thinking…';
+      responseBox.style.display = 'block';
+      responseBox.textContent = 'Contacting AI… this can take a few seconds, especially on slower connections.';
+
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': GEMINI_API_KEY
+            },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: p.text }] }]
+            })
+          }
+        );
+
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        const text = data.candidates && data.candidates[0] && data.candidates[0].content
+          ? data.candidates[0].content.parts.map(part => part.text).join('')
+          : null;
+
+        if (!text) throw new Error('No response content');
+        responseBox.textContent = text;
+      } catch (error) {
+        console.error('AI request error:', error);
+        responseBox.textContent = '⚠️ AI response unavailable right now. Check your internet connection and try again — or use "Copy" and paste the prompt into your usual AI app instead.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🤖 Ask AI';
+      }
     }
 
     let quizState = null;
