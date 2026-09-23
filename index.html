@@ -2163,13 +2163,16 @@
           }
         );
 
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (!res.ok) {
+          const errBody = await res.text();
+          throw new Error('HTTP ' + res.status + ' — ' + errBody.slice(0, 300));
+        }
         const data = await res.json();
         const text = data.candidates && data.candidates[0] && data.candidates[0].content
           ? data.candidates[0].content.parts.map(part => part.text).join('')
           : null;
 
-        if (!text) throw new Error('No response content');
+        if (!text) throw new Error('No response content. Raw reply: ' + JSON.stringify(data).slice(0, 400));
         aiResponses[promptIndex] = text;
 
         responseBox.innerHTML = `
@@ -2183,7 +2186,10 @@
         document.getElementById('aiResponseText' + promptIndex).textContent = text;
       } catch (error) {
         console.error('AI request error:', error);
-        responseBox.textContent = '⚠️ AI response unavailable right now. Check your internet connection and try again — or use "Copy" and paste the prompt into your usual AI app instead.';
+        // TEMPORARY DEBUG: showing the real error inline to diagnose the
+        // "AI response unavailable" report. Revert to the friendly-only
+        // message once the cause is confirmed and fixed.
+        responseBox.innerHTML = `<b>⚠️ Debug info (temporary):</b><br><span style="font-size:0.8rem; word-break:break-word;">${(error && error.message ? error.message : String(error)).replace(/</g,'&lt;')}</span>`;
       } finally {
         btn.disabled = false;
         btn.textContent = '🤖 Ask AI';
