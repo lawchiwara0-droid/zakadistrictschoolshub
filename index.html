@@ -2133,7 +2133,7 @@
     // backend) — a deliberate tradeoff to stay on Firebase's free Spark
     // plan. It's rate-limited on Google's side; see project notes for
     // context. Never put a paid-tier key here.
-    const GEMINI_API_KEY = 'AQ.Ab8RN6J4sq6lFEClnf_JOsC64Stk5Sq0EswlI8EfCfSpunb2HA';
+    const GEMINI_API_KEY = 'AQ.Ab8RN6JKrL42fACHhjMaoA7GXnrIfSYOxToDsK8CA1w4zlc9LQ';
     const GEMINI_MODEL = 'gemini-2.5-flash';
 
     const aiResponses = {}; // promptIndex -> last AI response text, for export actions
@@ -2163,16 +2163,13 @@
           }
         );
 
-        if (!res.ok) {
-          const errBody = await res.text();
-          throw new Error('HTTP ' + res.status + ' — ' + errBody.slice(0, 300));
-        }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
         const text = data.candidates && data.candidates[0] && data.candidates[0].content
           ? data.candidates[0].content.parts.map(part => part.text).join('')
           : null;
 
-        if (!text) throw new Error('No response content. Raw reply: ' + JSON.stringify(data).slice(0, 400));
+        if (!text) throw new Error('No response content');
         aiResponses[promptIndex] = text;
 
         responseBox.innerHTML = `
@@ -2186,10 +2183,7 @@
         document.getElementById('aiResponseText' + promptIndex).textContent = text;
       } catch (error) {
         console.error('AI request error:', error);
-        // TEMPORARY DEBUG: showing the real error inline to diagnose the
-        // "AI response unavailable" report. Revert to the friendly-only
-        // message once the cause is confirmed and fixed.
-        responseBox.innerHTML = `<b>⚠️ Debug info (temporary):</b><br><span style="font-size:0.8rem; word-break:break-word;">${(error && error.message ? error.message : String(error)).replace(/</g,'&lt;')}</span>`;
+        responseBox.textContent = '⚠️ AI response unavailable right now. Check your internet connection and try again — or use "Copy" and paste the prompt into your usual AI app instead.';
       } finally {
         btn.disabled = false;
         btn.textContent = '🤖 Ask AI';

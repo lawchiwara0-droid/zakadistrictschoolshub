@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'zaka-hub-v10-2-ai-debug';
+const CACHE_VERSION = 'zaka-hub-v10-3-ai-working-key';
 const urlsToCache = [
   './',
   './index.html',
