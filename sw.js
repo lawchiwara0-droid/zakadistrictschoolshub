@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'zaka-hub-v10-4-ai-copilot-paused';
+const CACHE_VERSION = 'zaka-hub-v11-0-seven-subjects';
 const urlsToCache = [
   './',
   './index.html',
